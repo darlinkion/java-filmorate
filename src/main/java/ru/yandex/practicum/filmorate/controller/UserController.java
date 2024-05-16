@@ -14,14 +14,15 @@ public class UserController extends BaseController<User> {
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
-        User tempUser = create(user);
         checkName(user);
+        User tempUser = create(user);
         log.info("Add user ==>" + tempUser);
         return tempUser;
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
+        checkName(user);
         User tempUser = update(user);
         log.info("Update user ==>" + tempUser);
         return tempUser;

@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import ru.yandex.practicum.filmorate.exception.ValidationExceptionInCotnroller;
+import ru.yandex.practicum.filmorate.exception.ValidationExceptionInController;
 import ru.yandex.practicum.filmorate.model.BaseModel;
 
 import java.util.ArrayList;
@@ -32,8 +32,8 @@ public abstract class BaseController<T extends BaseModel> {
 
     public T update(T temp) {
         Integer tempId = temp.getId();
-        if (temp.getId() > id) {
-            throw new ValidationExceptionInCotnroller("Обновление невозможно пробемы с id " + temp);
+        if (!dataBase.containsKey(tempId)) {
+            throw new ValidationExceptionInController("Обновление невозможно пробемы с id " + temp);
         }
         log.info("Id при запроси у объекта" + tempId);
         dataBase.remove(tempId);
