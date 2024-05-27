@@ -11,7 +11,8 @@ import java.util.*;
 @Service
 @AllArgsConstructor
 public class FilmService implements BaseService<Film> {
-    private InMemoryFilmRepository inMemoryFilmRepository;
+    private final InMemoryFilmRepository inMemoryFilmRepository;
+    private final UserService userService;
 
     @Override
     public Film create(Film temp) {
@@ -39,6 +40,7 @@ public class FilmService implements BaseService<Film> {
 
     public Film setLike(int filmId, int userId) {
         inMemoryFilmRepository.checkFilm(filmId);
+        userService.checkUser(userId);
         return inMemoryFilmRepository.addLike(filmId, userId);
     }
 
@@ -54,7 +56,7 @@ public class FilmService implements BaseService<Film> {
         List<Integer> likes = filmLikesCount
                 .values()
                 .stream()
-                .sorted()
+                .sorted((o1, o2) -> o2 - o1)
                 .limit(countFilm)
                 .toList();
 

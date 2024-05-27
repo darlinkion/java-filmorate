@@ -71,15 +71,15 @@ public class UserService implements BaseService<User> {
         return inMemoryUserRepository.getAllMutualFriends(userId, friendId);
     }
 
-    private void checkName(User user) {
-        if (user.getName() == null) {
-            user.setName(user.getLogin());
+    public void checkUser(int id) {
+        if (inMemoryUserRepository.get(id) == null) {
+            throw new ValidationException("Нет такого User id=>" + id);
         }
     }
 
-    private void checkUser(int id) {
-        if (inMemoryUserRepository.get(id) == null) {
-            throw new ValidationException("Нет такого User id=>" + id);
+    private void checkName(User user) {
+        if (user.getName() == null) {
+            user.setName(user.getLogin());
         }
     }
 }
