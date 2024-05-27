@@ -2,11 +2,13 @@ package ru.yandex.practicum.filmorate.service;
 
 import jakarta.validation.ValidationException;
 import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.repository.InMemoryFilmRepository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -51,23 +53,16 @@ public class FilmService implements BaseService<Film> {
     }
 
     public ArrayList<Film> getPopularFilms(int countFilm) {
+
         HashMap<Film, Integer> filmLikesCount = inMemoryFilmRepository.getMostPopular();
 
-        List<Integer> likes = filmLikesCount
-                .values()
+        List<Film> mostPopularFilms = filmLikesCount.entrySet()
                 .stream()
-                .sorted((o1, o2) -> o2 - o1)
+                .sorted((entry1, entry2) -> entry2.getValue() - entry1.getValue())
                 .limit(countFilm)
-                .toList();
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
 
-        ArrayList<Film> mostPopularFilms = new ArrayList<>();
-        for (Map.Entry<Film, Integer> filmWithLikes : filmLikesCount.entrySet()) {
-            for (int like : likes) {
-                if (filmWithLikes.getValue() == like) {
-                    mostPopularFilms.add(filmWithLikes.getKey());
-                }
-            }
-        }
-        return mostPopularFilms;
+        return new ArrayList<>(mostPopularFilms);
     }
 }
