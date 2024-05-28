@@ -16,7 +16,6 @@ import java.util.Set;
 public class InMemoryFilmRepository implements Repository<Film> {
 
     private final HashMap<Integer, Film> dataBase;
-    private final HashMap<Integer, Set<Film>> filmsLikesDataBase;
     private int id = 0;
 
     @Override

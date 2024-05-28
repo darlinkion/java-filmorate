@@ -15,8 +15,7 @@ import java.util.HashMap;
 public class InMemoryUserRepository implements Repository<User> {
 
     private final HashMap<Integer, User> dataBase;
-
-    private Integer id = 0;
+    private int id = 0;
 
     @Override
     public User create(User film) {
