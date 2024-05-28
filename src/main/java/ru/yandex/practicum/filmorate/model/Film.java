@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import ru.yandex.practicum.filmorate.validator.FilmReleaseDate;
 
 import java.time.LocalDate;
@@ -15,7 +16,7 @@ import java.util.Set;
 @Setter
 @ToString
 @EqualsAndHashCode(callSuper = true)
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class Film extends BaseModel {
     @NotBlank
     private String name;
