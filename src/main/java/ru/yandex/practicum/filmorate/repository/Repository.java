@@ -12,7 +12,5 @@ public interface Repository<T extends BaseModel> {
 
     ArrayList<T> getAll();
 
-    boolean delete(int id, int tempId);
-
     T get(Integer id);
 }

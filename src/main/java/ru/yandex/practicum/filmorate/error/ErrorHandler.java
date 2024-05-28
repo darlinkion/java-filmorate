@@ -5,33 +5,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 
 @Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
 
-    @ExceptionHandler(value = ValidationException.class)
+    @ExceptionHandler(value = NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse validationExceptionInController(final ValidationException e) {
-        log.info("Validation {}" + "\n" + getStackTrace(e), e.getMessage());
-        return new ErrorResponse(e.getMessage(), getStackTrace(e));
+    public ErrorResponse validationExceptionInController(final NotFoundException e) {
+        log.error("Validation {}", e);
+        return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleException(final Exception e) {
-        log.warn("Error\n" + getStackTrace(e), getStackTrace(e));
-        return new ErrorResponse("Необработанная ошибка", getStackTrace(e));
-    }
-
-    private String getStackTrace(Exception e) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        e.printStackTrace(pw);
-        return sw.toString();
+        log.error("Error\n", e);
+        return new ErrorResponse("Необработанная ошибка");
     }
 }

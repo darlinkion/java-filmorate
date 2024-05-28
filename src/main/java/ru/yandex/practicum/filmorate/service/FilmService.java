@@ -1,16 +1,18 @@
 package ru.yandex.practicum.filmorate.service;
 
-import jakarta.validation.ValidationException;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.repository.InMemoryFilmRepository;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class FilmService implements BaseService<Film> {
     private final InMemoryFilmRepository inMemoryFilmRepository;
     private final UserService userService;
@@ -33,35 +35,37 @@ public class FilmService implements BaseService<Film> {
     @Override
     public Film get(int id) {
         Optional<Film> tempFilm = Optional.ofNullable(inMemoryFilmRepository.get(id));
-        if (!tempFilm.isPresent()) {
-            throw new ValidationException("Нет такого фильма по id " + id);
+        if (tempFilm.isEmpty()) {
+            throw new NotFoundException("Нет такого фильма по id " + id);
         }
         return tempFilm.get();
     }
 
+
     public Film setLike(int filmId, int userId) {
-        inMemoryFilmRepository.checkFilm(filmId);
-        userService.checkUser(userId);
-        return inMemoryFilmRepository.addLike(filmId, userId);
+        userService.get(userId);
+        Film film = get(filmId);
+        film.getLikes().add(userId);
+        return film;
     }
 
-    public boolean deleteLike(int filmId, int userId) {
-        inMemoryFilmRepository.checkFilm(filmId);
-        inMemoryFilmRepository.checkUserInFilmRepository(userId);
-        return inMemoryFilmRepository.delete(filmId, userId);
+    public Film deleteLike(int filmId, int userId) {
+        userService.get(userId);
+        Film film = get(filmId);
+        film.getLikes().remove(userId);
+        return film;
     }
 
-    public ArrayList<Film> getPopularFilms(int countFilm) {
+    public List<Film> getPopularFilms(int countFilm) {
+        List<Film> tempList = inMemoryFilmRepository.getAll();
+        if (tempList == null) {
+            return List.of();
+        }
 
-        HashMap<Film, Integer> filmLikesCount = inMemoryFilmRepository.getMostPopular();
-
-        List<Film> mostPopularFilms = filmLikesCount.entrySet()
+        return tempList
                 .stream()
-                .sorted((entry1, entry2) -> entry2.getValue() - entry1.getValue())
+                .sorted((film1, film2) -> film2.getLikes().size() - film1.getLikes().size())
                 .limit(countFilm)
-                .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
-
-        return new ArrayList<>(mostPopularFilms);
     }
 }

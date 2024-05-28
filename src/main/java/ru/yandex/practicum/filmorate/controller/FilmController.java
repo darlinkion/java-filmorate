@@ -2,21 +2,22 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class FilmController {
 
-    FilmService filmService;
+    private final FilmService filmService;
 
     @PostMapping
     public Film create(@Valid @RequestBody Film temp) {
@@ -54,15 +55,15 @@ public class FilmController {
     }
 
     @DeleteMapping("{id}/like/{userId}")
-    public boolean deleterLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
-        boolean result = filmService.deleteLike(id, userId);
-        log.info("User id " + userId + " is remove like from film?==>" + result);
-        return result;
+    public Film deleterLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
+        Film film = filmService.deleteLike(id, userId);
+        log.info("User id " + userId + " is remove like from film==>" + film);
+        return film;
     }
 
     @GetMapping("popular")
-    public ArrayList<Film> getPopularFilms(@RequestParam(defaultValue = "10") Integer count) {
-        ArrayList<Film> films = filmService.getPopularFilms(count);
+    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") Integer count) {
+        List<Film> films = filmService.getPopularFilms(count);
         log.info("Most popular films ==>" + films);
         return films;
     }
