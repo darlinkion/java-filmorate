@@ -104,8 +104,8 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                         " F.RATING_ID," +
                         " R.RATING_TITLE " +
                         "FROM FILM AS F " +
-                        "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID;"
-                , JdbcFilmIRepository::createFilm);
+                        "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID;",
+                JdbcFilmIRepository::createFilm);
         for (Film film : list) {
             genresForFilm(film);
         }
