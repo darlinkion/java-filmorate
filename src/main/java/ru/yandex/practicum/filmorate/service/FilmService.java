@@ -17,7 +17,6 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class FilmService implements BaseService<Film> {
-
     private final JdbcLikesRepository likesRepository;
     private final JdbcFilmIRepository jdbcFilmIRepository;
     private final JdbcGenreRepository jdbcGenreRepository;
