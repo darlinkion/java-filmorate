@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -34,8 +33,8 @@ public class FilmController {
     }
 
     @GetMapping
-    public ArrayList<Film> getAll() {
-        ArrayList<Film> tempListFilms = filmService.getAll();
+    public List<Film> getAll() {
+        List<Film> tempListFilms = filmService.getAll();
         log.info("Get all films from DataBase ==>" + tempListFilms);
         return tempListFilms;
     }
@@ -48,17 +47,15 @@ public class FilmController {
     }
 
     @PutMapping("{id}/like/{userId}")
-    public Film setLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
-        Film tempFilm = filmService.setLike(id, userId);
-        log.info("Set like film ==>" + tempFilm);
-        return tempFilm;
+    public void setLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
+        filmService.setLike(id, userId);
+        log.info("Set like film id ==>" + id);
     }
 
     @DeleteMapping("{id}/like/{userId}")
-    public Film deleterLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
-        Film film = filmService.deleteLike(id, userId);
-        log.info("User id " + userId + " is remove like from film==>" + film);
-        return film;
+    public void deleterLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
+        filmService.deleteLike(id, userId);
+        log.info("User id " + userId + " is remove like from film id==>" + id);
     }
 
     @GetMapping("popular")

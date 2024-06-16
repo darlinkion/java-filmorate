@@ -4,77 +4,62 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.repository.InMemoryUserRepository;
+import ru.yandex.practicum.filmorate.repository.JdbcUserRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UserService implements BaseService<User> {
-    private final InMemoryUserRepository inMemoryUserRepository;
+    private final JdbcUserRepository jdbcUserRepository;
 
     @Override
     public User create(User user) {
         checkName(user);
-        return inMemoryUserRepository.create(user);
+        return jdbcUserRepository.create(user);
     }
 
     @Override
     public User update(User user) {
         checkName(user);
-        return inMemoryUserRepository.update(user);
+        return jdbcUserRepository.update(user);
     }
 
     @Override
-    public ArrayList<User> getAll() {
-        return inMemoryUserRepository.getAll();
+    public List<User> getAll() {
+        return jdbcUserRepository.getAll();
     }
 
     @Override
     public User get(int id) {
-        Optional<User> user = Optional.ofNullable(inMemoryUserRepository.get(id));
+        Optional<User> user = Optional.ofNullable(jdbcUserRepository.get(id));
         if (user.isEmpty()) {
             throw new NotFoundException("Нет такого пользователя по id " + id);
         }
         return user.get();
     }
 
-
-    public User addFriends(int userId, int friendId) {
-
-        User friend = get(friendId);
-        User user = get(userId);
-
-        friend.getFriends().add(userId);
-        user.getFriends().add(friendId);
-
-        return user;
+    public void addFriends(int userId, int friendId) {
+        get(userId);
+        get(friendId);
+        jdbcUserRepository.addFriend(userId, friendId);
     }
 
-    public User deleteFriends(int userId, int friendId) {
-        User friend = get(friendId);
-        User user = get(userId);
-
-        friend.getFriends().remove(userId);
-        user.getFriends().remove(friendId);
-
-        return friend;
+    public void deleteFriends(int userId, int friendId) {
+        get(userId);
+        get(friendId);
+        jdbcUserRepository.deleteFriends(userId, friendId);
     }
 
     public List<User> getAllFriends(int id) {
-        return get(id)
-                .getFriends()
-                .stream()
-                .map(friend -> get(friend))
-                .collect(Collectors.toList());
+        get(id);
+        return jdbcUserRepository.getAllFrineds(id);
     }
 
     public List<User> getAllMutualFriends(int userId, int friendId) {
-        List<User> allFriendsUser1 = getAllFriends(userId);
-        List<User> allFriendsUser2 = getAllFriends(friendId);
+        List<User> allFriendsUser1 = jdbcUserRepository.getAllFrineds(userId);
+        List<User> allFriendsUser2 = jdbcUserRepository.getAllFrineds(friendId);
 
         allFriendsUser1.retainAll(allFriendsUser2);
         return allFriendsUser1;

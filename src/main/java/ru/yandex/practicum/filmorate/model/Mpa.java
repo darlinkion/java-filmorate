@@ -5,8 +5,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
-@EqualsAndHashCode(of = {"id"})
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public abstract class BaseModel {
-    protected Integer id;
+public class Mpa extends BaseModel {
+    private String name;
 }

@@ -4,16 +4,15 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.validator.FilmReleaseDate;
 
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Set;
 
-@Getter
-@Setter
-@ToString
+@Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 public class Film extends BaseModel {
@@ -22,11 +21,12 @@ public class Film extends BaseModel {
     @NotBlank
     @Size(min = 3, max = 200)
     private String description;
-
     @FilmReleaseDate
     private LocalDate releaseDate;
-    @NotNull
     @Positive
     private Integer duration;
-    private Set<Integer> likes = new HashSet<>();
+
+    @NotNull
+    private Mpa mpa;
+    private Set<Genre> genres;
 }

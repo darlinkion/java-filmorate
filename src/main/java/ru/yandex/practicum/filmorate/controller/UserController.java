@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -33,8 +32,8 @@ public class UserController {
     }
 
     @GetMapping
-    public ArrayList<User> getAll() {
-        ArrayList<User> tempListUsers = userService.getAll();
+    public List<User> getAll() {
+        List<User> tempListUsers = userService.getAll();
         log.info("Get all users from DataBase ==>" + tempListUsers);
         return tempListUsers;
     }
@@ -47,17 +46,13 @@ public class UserController {
     }
 
     @PutMapping("{id}/friends/{friendId}")
-    public User addFriends(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
-        User user = userService.addFriends(id, friendId);
-        log.info(" friend added to user ==>" + user);
-        return user;
+    public void addFriends(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
+        userService.addFriends(id, friendId);
     }
 
     @DeleteMapping("{id}/friends/{friendId}")
-    public User deleteFriend(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
-        User user = userService.deleteFriends(id, friendId);
-        log.info(" is remove  from friends user ==>" + user);
-        return user;
+    public void deleteFriend(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
+        userService.deleteFriends(id, friendId);
     }
 
     @GetMapping("{id}/friends")

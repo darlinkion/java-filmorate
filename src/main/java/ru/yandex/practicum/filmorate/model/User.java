@@ -4,15 +4,13 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
 
-@Getter
-@Setter
-@ToString
+@Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 public class User extends BaseModel {
@@ -24,5 +22,4 @@ public class User extends BaseModel {
     @Past
     @NotNull
     private LocalDate birthday;
-    private Set<Integer> friends = new HashSet<>();
 }
