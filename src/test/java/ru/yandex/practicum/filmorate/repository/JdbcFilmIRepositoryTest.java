@@ -14,15 +14,14 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @JdbcTest
 @Import(JdbcFilmIRepository.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class JdbcFilmIRepositoryTest {
+
     private final JdbcFilmIRepository jdbcFilmIRepository;
-    private static final int TEST_FILM_ID = 2;
 
     private static Film getFilm() {
         Film film = new Film();

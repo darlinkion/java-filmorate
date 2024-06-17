@@ -11,20 +11,16 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.setRemoveAssertJRelatedElementsFromStackTrace;
-import static org.junit.jupiter.api.Assertions.*;
 
 @JdbcTest
 @Import(JdbcUserRepository.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class JdbcUserRepositoryTest {
-    private final JdbcUserRepository jdbcUserRepository;
-
     private static final int TEST_USER_ID = 6;
+    private final JdbcUserRepository jdbcUserRepository;
 
     static User getTestUser() {
         User user = new User();
