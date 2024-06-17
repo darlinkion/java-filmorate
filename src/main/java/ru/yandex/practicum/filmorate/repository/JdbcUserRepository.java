@@ -75,7 +75,7 @@ public class JdbcUserRepository implements IRepository<User> {
         if (users.size() != 1) {
             throw new NotFoundException("Пользователь с идентификатором id=" + id + " не найден.");
         }
-        User user = users.get(0);
+        User user = users.getFirst();
         log.info("Найден пользователь: {}", user);
         return user;
     }
@@ -94,5 +94,13 @@ public class JdbcUserRepository implements IRepository<User> {
                         " FROM FRIENDS AS F" +
                         " WHERE F.USER_ID=?)",
                 JdbcUserRepository::createUser, id);
+    }
+
+    public List<User> getAllMutualFriends(int userId, int friendId){
+        return jdbc.query("SELECT U.*" +
+                        " FROM USERS AS U " +
+                        "INNER JOIN FRIENDS f1 ON u.ID = f1.FRIEND_ID AND f1.USER_ID =?" +
+                        "INNER JOIN FRIENDS f2 ON u.ID = f2.FRIEND_ID AND f2.USER_ID=?;",
+                JdbcUserRepository::createUser, friendId,userId);
     }
 }

@@ -12,11 +12,11 @@ public class JdbcLikesRepository {
     private final JdbcTemplate jdbc;
 
     public void setLike(int filmId, int userId) {
-        jdbc.update("INSERT INTO LIKES (FILM_ID,USERS_ID) VALUES(?, ?);", filmId, userId);
+        jdbc.update("INSERT INTO LIKES (FILM_ID,USER_ID) VALUES(?, ?);", filmId, userId);
     }
 
     public void deleteLike(int filmId, int userId) {
-        jdbc.update("DELETE FROM LIKES WHERE USERS_ID=? AND FILM_ID=? ;", userId, filmId);
+        jdbc.update("DELETE FROM LIKES WHERE USER_ID=? AND FILM_ID=? ;", userId, filmId);
     }
 }
 

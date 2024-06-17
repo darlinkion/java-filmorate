@@ -21,7 +21,6 @@ public class FilmService implements BaseService<Film> {
     private final JdbcFilmIRepository jdbcFilmIRepository;
     private final JdbcGenreRepository jdbcGenreRepository;
     private final JdbcMpaRepository jdbcMpaRepository;
-    private final UserService userService;
 
     @Override
     public Film create(Film film) {

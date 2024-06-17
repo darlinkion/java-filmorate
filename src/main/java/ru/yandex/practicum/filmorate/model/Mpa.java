@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import lombok.*;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
+@ToString
+@Getter
+@Setter
 @NoArgsConstructor
 public class Mpa extends BaseModel {
     private String name;

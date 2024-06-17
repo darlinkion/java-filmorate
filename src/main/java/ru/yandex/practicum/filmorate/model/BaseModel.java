@@ -1,12 +1,12 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@EqualsAndHashCode(of = {"id"})
+@ToString
+@Getter
+@Setter
 @NoArgsConstructor
+@EqualsAndHashCode(of = {"id"})
 public abstract class BaseModel {
     protected Integer id;
 }

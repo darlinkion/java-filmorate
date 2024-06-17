@@ -4,14 +4,13 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
+@ToString
+@Getter
+@Setter
 @NoArgsConstructor
 public class User extends BaseModel {
     @Email

@@ -34,7 +34,7 @@ public class JdbcMpaRepository {
         if (mpaList.size() != 1) {
             throw new EntityNotFoundException("Нет рейтинга по такому id: " + id);
         }
-        Mpa mpa = mpaList.get(0);
+        Mpa mpa = mpaList.getFirst();
         log.info("Найден рейтинг: {}", mpa);
         return mpa;
     }

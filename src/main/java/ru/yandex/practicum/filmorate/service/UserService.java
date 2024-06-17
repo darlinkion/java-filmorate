@@ -58,11 +58,7 @@ public class UserService implements BaseService<User> {
     }
 
     public List<User> getAllMutualFriends(int userId, int friendId) {
-        List<User> allFriendsUser1 = jdbcUserRepository.getAllFrineds(userId);
-        List<User> allFriendsUser2 = jdbcUserRepository.getAllFrineds(friendId);
-
-        allFriendsUser1.retainAll(allFriendsUser2);
-        return allFriendsUser1;
+        return jdbcUserRepository.getAllMutualFriends(userId,friendId);
     }
 
     private void checkName(User user) {

@@ -129,9 +129,9 @@ public class JdbcFilmIRepository implements IRepository<Film> {
             log.info("Фильм с идентификатором {} не найден.", id);
             throw new NotFoundException("Пользователь с идентификатором id не найден.");
         }
-        log.info("Найден фильм: {} {}", id, films.get(0).getName());
-        genresForFilm(films.get(0));
-        return films.get(0);
+        log.info("Найден фильм: {} {}", id, films.getFirst().getName());
+        genresForFilm(films.getFirst());
+        return films.getFirst();
     }
 
     private Film genresForFilm(Film film) {

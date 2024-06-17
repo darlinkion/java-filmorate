@@ -30,12 +30,12 @@ public class JdbcGenreRepository {
     }
 
     public Genre get(int id) {
-        List<Genre> genreListList = jdbc.query("SELECT * FROM GENRE WHERE GENRE_ID=?",
+        List<Genre> genreList = jdbc.query("SELECT * FROM GENRE WHERE GENRE_ID=?",
                 JdbcGenreRepository::createGenre, id);
-        if (genreListList.size() != 1) {
+        if (genreList.size() != 1) {
             throw new EntityNotFoundException("Нет жанра по такому id: " + id);
         }
-        Genre genre = genreListList.get(0);
+        Genre genre = genreList.getFirst();
         log.info("Найден жанр: {}", genre);
         return genre;
     }
