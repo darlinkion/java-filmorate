@@ -96,11 +96,11 @@ public class JdbcUserRepository implements IRepository<User> {
                 JdbcUserRepository::createUser, id);
     }
 
-    public List<User> getAllMutualFriends(int userId, int friendId){
+    public List<User> getAllMutualFriends(int userId, int friendId) {
         return jdbc.query("SELECT U.*" +
                         " FROM USERS AS U " +
                         "INNER JOIN FRIENDS f1 ON u.ID = f1.FRIEND_ID AND f1.USER_ID =?" +
                         "INNER JOIN FRIENDS f2 ON u.ID = f2.FRIEND_ID AND f2.USER_ID=?;",
-                JdbcUserRepository::createUser, friendId,userId);
+                JdbcUserRepository::createUser, friendId, userId);
     }
 }
