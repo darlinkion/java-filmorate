@@ -8,12 +8,11 @@ import lombok.*;
 import ru.yandex.practicum.filmorate.validator.FilmReleaseDate;
 
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Set;
 
+@ToString
 @Getter
 @Setter
-@ToString
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 public class Film extends BaseModel {
@@ -22,11 +21,12 @@ public class Film extends BaseModel {
     @NotBlank
     @Size(min = 3, max = 200)
     private String description;
-
     @FilmReleaseDate
     private LocalDate releaseDate;
-    @NotNull
     @Positive
     private Integer duration;
-    private Set<Integer> likes = new HashSet<>();
+
+    @NotNull
+    private Mpa mpa;
+    private Set<Genre> genres;
 }

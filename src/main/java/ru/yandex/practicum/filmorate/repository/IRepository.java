@@ -2,15 +2,15 @@ package ru.yandex.practicum.filmorate.repository;
 
 import ru.yandex.practicum.filmorate.model.BaseModel;
 
-import java.util.ArrayList;
+import java.util.List;
 
-public interface Repository<T extends BaseModel> {
+public interface IRepository<T extends BaseModel> {
 
     T create(T data);
 
     T update(T data);
 
-    ArrayList<T> getAll();
+    List<T> getAll();
 
-    T get(Integer id);
+    T get(int id);
 }
