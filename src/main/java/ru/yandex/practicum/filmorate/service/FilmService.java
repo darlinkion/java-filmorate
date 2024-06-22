@@ -60,13 +60,10 @@ public class FilmService implements BaseService<Film> {
 
     public List<Film> getPopularFilms(int countFilm, Integer genreId, Integer year) {
         List<Film> films = new ArrayList<>();
-        if (genreId == null && year == null) {
+        if (genreId == null && year == null)
             return jdbcFilmIRepository.getPopularFilms(countFilm);
-        }
-
-        if (year == null) {
+        if (year == null)
             return jdbcFilmIRepository.getPopularFilmsWithGenre(countFilm, genreId);
-        }
 
         if (genreId == null) {
             return jdbcFilmIRepository.getPopularFilmsWithYear(countFilm, year);
