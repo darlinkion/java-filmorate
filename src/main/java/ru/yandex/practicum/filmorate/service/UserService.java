@@ -62,7 +62,7 @@ public class UserService implements BaseService<User> {
     }
 
     private void checkName(User user) {
-        if (user.getName() == null) {
+        if (user.getName() == null || user.getName().isEmpty()) {
             user.setName(user.getLogin());
         }
     }

@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.repository.JdbcGenreRepository;
 import ru.yandex.practicum.filmorate.repository.JdbcLikesRepository;
 import ru.yandex.practicum.filmorate.repository.JdbcMpaRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -57,8 +58,21 @@ public class FilmService implements BaseService<Film> {
         likesRepository.deleteLike(filmId, userId);
     }
 
-    public List<Film> getPopularFilms(int countFilm) {
-        List<Film> films = jdbcFilmIRepository.getPopularFilms(countFilm);
+    public List<Film> getPopularFilms(int countFilm, Integer genreId, Integer year) {
+        List<Film> films = new ArrayList<>();
+        if (genreId == null && year == null) {
+            return jdbcFilmIRepository.getPopularFilms(countFilm);
+        }
+
+        if (year == null) {
+            return jdbcFilmIRepository.getPopularFilmsWithGenre(countFilm, genreId);
+        }
+
+        if (genreId == null) {
+            return jdbcFilmIRepository.getPopularFilmsWithYear(countFilm, year);
+        } else {
+            films = jdbcFilmIRepository.getPopularFilmsWithYearAndGenre(countFilm, genreId, year);
+        }
         return films;
     }
 
