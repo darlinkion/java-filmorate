@@ -19,6 +19,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+
 @Repository
 @RequiredArgsConstructor
 @Slf4j
@@ -91,7 +92,8 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 jdbc.update("INSERT INTO FILM_GENRE (FILM_ID, GENRE_ID) VALUES(?, ?)", id, genre.getId());
             }
         }
-        return film;
+
+        return get(film.getId());
     }
 
     @Override
@@ -165,6 +167,82 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "GROUP BY F.FILM_ID " +
                 "ORDER BY COUNT(L.FILM_ID) DESC " +
                 "LIMIT ?;", JdbcFilmIRepository::createFilm, countFilm);
+
+        for (Film film : list) {
+            genresForFilm(film);
+        }
         return list;
     }
+
+    public List<Film> getPopularFilmsWithGenre(int countFilm, int genreId) {
+
+        List<Film> list = jdbc.query("SELECT F.FILM_ID, " +
+                "F.NAME, " +
+                "F.DESCRIPTION, " +
+                "F.RELEASE_DATE, " +
+                "F.DURATION, " +
+                "F.RATING_ID, " +
+                "R.RATING_TITLE, " +
+                "COUNT(L.FILM_ID) " +
+                "FROM FILM AS F " +
+                "LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
+                "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID " +
+                "INNER JOIN FILM_GENRE AS FG ON F.FILM_ID = FG.FILM_ID " +
+                "WHERE FG.GENRE_ID=? " +
+                "GROUP BY F.FILM_ID " +
+                "ORDER BY COUNT(L.FILM_ID) DESC " +
+                " LIMIT ?;", JdbcFilmIRepository::createFilm, genreId, countFilm);
+        for (Film film : list) {
+            genresForFilm(film);
+        }
+        return list;
+    }
+
+    public List<Film> getPopularFilmsWithYear(int countFilm, int year) {
+
+        List<Film> list = jdbc.query("SELECT F.FILM_ID, " +
+                "F.NAME, " +
+                "F.DESCRIPTION, " +
+                "F.RELEASE_DATE, " +
+                "F.DURATION, " +
+                "F.RATING_ID, " +
+                "R.RATING_TITLE, " +
+                "COUNT(L.FILM_ID) " +
+                "FROM FILM AS F " +
+                "LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
+                "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID " +
+                "WHERE EXTRACT(YEAR FROM F.RELEASE_DATE)=?" +
+                "GROUP BY F.FILM_ID " +
+                "ORDER BY COUNT(L.FILM_ID) DESC " +
+                "LIMIT ?;", JdbcFilmIRepository::createFilm, year, countFilm);
+        for (Film film : list) {
+            genresForFilm(film);
+        }
+        return list;
+    }
+
+    public List<Film> getPopularFilmsWithYearAndGenre(int countFilm, int genreId, int year) {
+
+        List<Film> list = jdbc.query("SELECT F.FILM_ID, " +
+                "F.NAME, " +
+                "F.DESCRIPTION, " +
+                "F.RELEASE_DATE, " +
+                "F.DURATION, " +
+                "F.RATING_ID, " +
+                "R.RATING_TITLE, " +
+                "COUNT(L.FILM_ID) " +
+                "FROM FILM AS F " +
+                "LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
+                "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID " +
+                "INNER JOIN FILM_GENRE AS FG ON F.FILM_ID = FG.FILM_ID " +
+                "WHERE FG.GENRE_ID=? AND EXTRACT(YEAR FROM F.RELEASE_DATE)=?" +
+                "GROUP BY F.FILM_ID " +
+                "ORDER BY COUNT(L.FILM_ID) DESC " +
+                "LIMIT ?;", JdbcFilmIRepository::createFilm, genreId, year, countFilm);
+        for (Film film : list) {
+            genresForFilm(film);
+        }
+        return list;
+    }
+
 }
