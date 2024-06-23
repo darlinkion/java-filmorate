@@ -45,6 +45,12 @@ public class UserController {
         return tempUser;
     }
 
+    @DeleteMapping("{id}")
+    public void deleteById(@PathVariable int id) {
+        userService.deleteById(id);
+        log.info("Delete user from DataBase with id ==>" + id);
+    }
+
     @PutMapping("{id}/friends/{friendId}")
     public void addFriends(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
         userService.addFriends(id, friendId);

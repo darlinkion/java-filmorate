@@ -45,6 +45,12 @@ public class FilmController {
         return tempFilm;
     }
 
+    @DeleteMapping("{id}")
+    public void deleteById(@PathVariable int id) {
+        filmService.deleteById(id);
+        log.info("Delete film from DataBase with id ==>" + id);
+    }
+
     @PutMapping("{id}/like/{userId}")
     public void setLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
         filmService.setLike(id, userId);

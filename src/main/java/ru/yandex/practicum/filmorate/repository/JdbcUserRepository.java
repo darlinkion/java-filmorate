@@ -80,6 +80,17 @@ public class JdbcUserRepository implements IRepository<User> {
         return user;
     }
 
+    @Override
+    public void deleteById(int id) {
+        try {
+            String sql = "delete from users where id = ?";
+            jdbc.update(sql, id);
+        } catch (Exception e) {
+            log.error("Ошибка при удалении пользователя из БД: {}", e.getMessage(), e);
+            throw new NotFoundException("Ошибка при удалении пользователя из БД:");
+        }
+    }
+
     public void addFriend(int userId, int friendId) {
         jdbc.update("INSERT INTO FRIENDS (USER_ID, FRIEND_ID) VALUES (?,?)", userId, friendId);
     }
