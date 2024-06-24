@@ -5,10 +5,8 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.repository.JdbcFilmIRepository;
-import ru.yandex.practicum.filmorate.repository.JdbcGenreRepository;
-import ru.yandex.practicum.filmorate.repository.JdbcLikesRepository;
-import ru.yandex.practicum.filmorate.repository.JdbcMpaRepository;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.repository.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +19,7 @@ public class FilmService implements BaseService<Film> {
     private final JdbcFilmIRepository jdbcFilmIRepository;
     private final JdbcGenreRepository jdbcGenreRepository;
     private final JdbcMpaRepository jdbcMpaRepository;
+    private final JdbcUserRepository jdbcUserRepository;
 
     @Override
     public Film create(Film film) {
@@ -50,7 +49,9 @@ public class FilmService implements BaseService<Film> {
     }
 
     public void setLike(int filmId, int userId) {
-        likesRepository.setLike(filmId, userId);
+        Film film = get(filmId);
+        User user = jdbcUserRepository.get(userId);
+        likesRepository.setLike(film.getId(), user.getId());
     }
 
     public void deleteLike(int filmId, int userId) {

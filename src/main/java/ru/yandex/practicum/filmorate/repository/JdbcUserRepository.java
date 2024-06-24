@@ -8,6 +8,8 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
@@ -31,6 +33,19 @@ public class JdbcUserRepository implements IRepository<User> {
         user.setName(resultSet.getString("NAME"));
         user.setBirthday(resultSet.getDate("BIRTHDAY").toLocalDate());
         return user;
+    }
+
+    private static Film createFilm(ResultSet resultSet, int row) throws SQLException {
+        Film film = new Film();
+        film.setId(resultSet.getInt("FILM_ID"));
+        film.setName(resultSet.getString("NAME"));
+        film.setDescription(resultSet.getString("DESCRIPTION"));
+        film.setReleaseDate(resultSet.getDate("RELEASE_DATE").toLocalDate());
+        film.setDuration(resultSet.getInt("DURATION"));
+        film.setMpa(new Mpa());
+        film.getMpa().setId(resultSet.getInt("RATING_ID"));
+        film.getMpa().setName(resultSet.getString("RATING_TITLE"));
+        return film;
     }
 
     @Override
@@ -102,5 +117,26 @@ public class JdbcUserRepository implements IRepository<User> {
                         "INNER JOIN FRIENDS f1 ON u.ID = f1.FRIEND_ID AND f1.USER_ID =?" +
                         "INNER JOIN FRIENDS f2 ON u.ID = f2.FRIEND_ID AND f2.USER_ID=?;",
                 JdbcUserRepository::createUser, friendId, userId);
+    }
+
+    public List<Film> getRecommendationFilms(long userId) {
+        String sql = "SELECT * FROM FILM AS f " +
+                        "JOIN RATING AS r ON f.RATING_ID = r.RATING_ID " +
+                        "WHERE f.FILM_ID IN ( " +
+                            "SELECT FILM_ID FROM LIKES " +
+                                "WHERE USER_ID IN ( " +
+                                    "SELECT l1.USER_ID FROM LIKES AS l1 " +
+                                        "RIGHT JOIN LIKES AS l2 ON l2.FILM_ID = l1.FILM_ID " +
+                                        "GROUP BY l1.USER_ID, l2.USER_ID " +
+                                        "HAVING l1.USER_ID IS NOT NULL " +
+                                        "AND l1.USER_ID != ? AND l2.USER_ID = ? " +
+                                        "ORDER BY COUNT(l1.USER_ID) DESC " +
+                                ") " +
+                                "AND f.FILM_ID NOT IN (  " +
+                                    "SELECT FILM_ID FROM LIKES " +
+                                    "WHERE USER_ID = ? " +
+                                ") " +
+                        ");";
+        return jdbc.query(sql, JdbcUserRepository::createFilm, userId, userId, userId);
     }
 }
