@@ -129,11 +129,22 @@ public class JdbcFilmIRepository implements IRepository<Film> {
         List<Film> films = jdbc.query(sqlQuery, JdbcFilmIRepository::createFilm, id);
         if (films.size() != 1) {
             log.info("Фильм с идентификатором {} не найден.", id);
-            throw new NotFoundException("Пользователь с идентификатором id не найден.");
+            throw new NotFoundException("Фильм с идентификатором id = " + id + " не найден.");
         }
         log.info("Найден фильм: {} {}", id, films.getFirst().getName());
         genresForFilm(films.getFirst());
         return films.getFirst();
+    }
+
+    @Override
+    public void deleteById(int id) {
+        try {
+            String sql = "delete from film where film_id = ?";
+            jdbc.update(sql, id);
+        } catch (Exception e) {
+            log.error("Ошибка в удалении фильма по идентификатору из БД: {}", e.getMessage(), e);
+            throw new NotFoundException("Ошибка в удалении фильма по идентификатору из БД:");
+        }
     }
 
     private Film genresForFilm(Film film) {

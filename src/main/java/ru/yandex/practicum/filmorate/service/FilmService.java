@@ -50,6 +50,13 @@ public class FilmService implements BaseService<Film> {
         return tempFilm.get();
     }
 
+    public void deleteById(int id) {
+        if (get(id) == null) {
+            throw new NotFoundException("Нет такого фильма по id " + id);
+        }
+        jdbcFilmIRepository.deleteById(id);
+    }
+
     public void setLike(int filmId, int userId) {
         likesRepository.setLike(filmId, userId);
     }

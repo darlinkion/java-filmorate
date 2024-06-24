@@ -40,6 +40,14 @@ public class UserService implements BaseService<User> {
         return user.get();
     }
 
+    @Override
+    public void deleteById(int id) {
+        if (get(id) == null) {
+            throw new NotFoundException("Нет такого пользователя по id " + id);
+        }
+        jdbcUserRepository.deleteById(id);
+    }
+
     public void addFriends(int userId, int friendId) {
         get(userId);
         get(friendId);
