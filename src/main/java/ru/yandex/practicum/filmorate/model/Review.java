@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.ColumnDefault;
 
 @ToString
 @Getter
@@ -19,5 +20,5 @@ public class Review {
     Boolean isPositive;
     int userId;
     int filmId;
-    int useful;
+    int useful=0;
 }
