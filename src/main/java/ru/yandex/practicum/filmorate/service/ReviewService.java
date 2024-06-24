@@ -27,7 +27,7 @@ public class ReviewService {
 
     public Review get(int id) {
         return null;
-    }
+    } //Обернуть в Optional и сделать проверку
 
     public List<Review> getAll(Integer filmId, Integer count) {
         return null;
