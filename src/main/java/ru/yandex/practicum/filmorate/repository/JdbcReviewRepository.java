@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.sql.ResultSet;
@@ -32,7 +33,7 @@ public class JdbcReviewRepository {
                 .addValues(Map.of("filmId", review.getFilmId()))
                 .addValues(Map.of("useful", review.getUseful()));
 
-        jdbc.update("INSERT INTO REVIEW VALUES (CONTTENT,IS_POSITIVE," +
+        jdbc.update("INSERT INTO REVIEWS VALUES (CONTENT,IS_POSITIVE," +
                 "USER_ID,FILM_ID,USEFUL)" +
                 " VALUES (:content,:isPositive,:userId,:filmId,:useful)"
                 ,params, keyHolder, new String[]{"REVIEW_ID"});
@@ -43,20 +44,61 @@ public class JdbcReviewRepository {
     }
 
     public Review update(Review review){
-        return null;
+
+        int useful=calculateUseful(review);
+        review.setUseful(useful);
+
+        SqlParameterSource params= new MapSqlParameterSource()
+                .addValues(Map.of("content", review.getContent()))
+                .addValues(Map.of("isPositive", review.getIsPositive()))
+                .addValues(Map.of("userId",review.getUserId()))
+                .addValues(Map.of("filmId", review.getFilmId()))
+                .addValues(Map.of("useful", review.getUseful()))
+                .addValues((Map.of("reviewId",review.getReviewId())));
+
+        jdbc.update( "UPDATE REVIEWS SET CONTENT = :content, IS_POSITIVE = :isPositive, " +
+                "USER_ID = :userId, FILM_ID = :filmId, USEFUL = :useful " +
+                "WHERE REVIEW_ID=:reviewId",params);
+
+        return review;
     }
     public void deleteById(int id){
-
+        jdbc.update("DELETE FROM REVIEWS WHERE REVIEW_ID=?",id);
     }
-    public Optional<Review> getReviewById(int reviewId) {
-        SqlParameterSource params= new MapSqlParameterSource()
-                .addValues(Map.of("reviewId",reviewId));
 
+    public Review get(int reviewId) {
 
+        String sqlQuery = "SELECT REVIEW_ID," +
+                " CONTENT," +
+                " IS_POSITIVE," +
+                " USER_ID," +
+                " FILM_ID," +
+                " USEFUL" +
+                "FROM REVIEWS " +
+                "WHERE REVIEW_ID = ?;";
+        List<Review> reviews=jdbc.query(sqlQuery, JdbcReviewRepository::createReview,reviewId);
+        if(reviews.size()!=1){
+            log.error("Отзыв с идентификатором {} не найден.", reviewId);
+            throw new NotFoundException("Отзыв не найден id="+reviewId);
+        }
+        Review review=reviews.getFirst();
+        log.info("Найден отзыв -->"+review);
+        return review;
+    }
+
+    public List<Review> getAll(int count){
+        String sqlQuery = "SELECT REVIEW_ID," +
+                " CONTENT," +
+                " IS_POSITIVE," +
+                " USER_ID," +
+                " FILM_ID," +
+                " USEFUL" +
+                "FROM REVIEWS " +
+                "LIMIT ?;";//Добавить сортировку по useful
+        List<Review> reviews=jdbc.query(sqlQuery, JdbcReviewRepository::createReview,count);
         return null;
     }
-
-    public List<Review> getAll(){
+    public List<Review> getAllByFilmId(int filmIdm, int count){
         return null;
     }
 
@@ -87,5 +129,8 @@ public class JdbcReviewRepository {
         return review;
     }
 
+    private int calculateUseful(Review review){
+        return 0;
+    }
 
 }
