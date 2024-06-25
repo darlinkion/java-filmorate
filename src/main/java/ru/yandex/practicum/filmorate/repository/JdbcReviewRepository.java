@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.Review;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -41,11 +42,38 @@ public class JdbcReviewRepository {
         return review;
     }
 
+    public Review update(Review review){
+        return null;
+    }
+    public void deleteById(int id){
+
+    }
     public Optional<Review> getReviewById(int reviewId) {
         SqlParameterSource params= new MapSqlParameterSource()
                 .addValues(Map.of("reviewId",reviewId));
 
+
         return null;
+    }
+
+    public List<Review> getAll(){
+        return null;
+    }
+
+    public void setLike(int reviewId, int userId){
+
+    }
+
+    public void setDislike(int reviewId, int userId){
+
+    }
+
+    public void removeLike(int reviewId, int userId){
+
+    }
+
+    public void removeDislike(int reviewId,int userId){
+
     }
 
     private static Review createReview(ResultSet resultSet, int row) throws SQLException {

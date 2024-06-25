@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.JdbcUserRepository;
 
@@ -67,6 +68,10 @@ public class UserService implements BaseService<User> {
 
     public List<User> getAllMutualFriends(int userId, int friendId) {
         return jdbcUserRepository.getAllMutualFriends(userId, friendId);
+    }
+
+    public List<Film> getRecommendationFilms(long userId) {
+        return jdbcUserRepository.getRecommendationFilms(userId);
     }
 
     private void checkName(User user) {
