@@ -94,16 +94,44 @@ public class JdbcReviewRepository {
                 " FILM_ID," +
                 " USEFUL" +
                 "FROM REVIEWS " +
-                "LIMIT ?;";//Добавить сортировку по useful
+                "LIMIT ?" +
+                "ORDER BY USEFUL DESC;";//Добавить сортировку по useful
         List<Review> reviews=jdbc.query(sqlQuery, JdbcReviewRepository::createReview,count);
-        return null;
+
+        return reviews;
     }
-    public List<Review> getAllByFilmId(int filmIdm, int count){
-        return null;
+    public List<Review> getAllByFilmId(int filmId, int count){
+        String sqlQuery = "SELECT REVIEW_ID," +
+                " CONTENT," +
+                " IS_POSITIVE," +
+                " USER_ID," +
+                " FILM_ID," +
+                " USEFUL" +
+                " FROM REVIEWS " +
+                " WHERE FILM_ID=?" +
+                " LIMIT ?" +
+                " ORDER BY USEFUL DESC;";
+        List<Review> reviews=jdbc.query(sqlQuery, JdbcReviewRepository::createReview,filmId,count);
+
+        return reviews;
     }
 
     public void setLike(int reviewId, int userId){
+        Review review =get(reviewId);
+        int useful= review.getUseful();
+        useful++;
 
+        SqlParameterSource params= new MapSqlParameterSource()
+                .addValues(Map.of("reviewId", reviewId))
+                .addValues(Map.of("userId", userId))
+                .addValues(Map.of("isLike", 1));
+
+
+        jdbc.update("INSERT INTO GRADE_REVIEWS VALUES (USER_ID,REVIEW_ID," +
+                        "IS_LIKE) VALUES (:reviewId,:userId,:isLike)",params);
+
+
+        review.setReviewId(reviewId); //Доделать логику лайков
     }
 
     public void setDislike(int reviewId, int userId){
@@ -130,7 +158,12 @@ public class JdbcReviewRepository {
     }
 
     private int calculateUseful(Review review){
-        return 0;
+        String sqlQuery = "SELECT SUM(IS_LIKE)" +
+                " FROM GRADE_REVIEWS " +
+                " WHERE REVIEW_ID=?;";
+
+        Integer sumIsLike = jdbc.queryForObject(sqlQuery, Integer.class, review.getReviewId());
+        return sumIsLike != null ? sumIsLike : 0;
     }
 
 }
