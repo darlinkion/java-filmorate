@@ -132,22 +132,22 @@ public class JdbcUserRepository implements IRepository<User> {
 
     public List<Film> getRecommendationFilms(long userId) {
         String sql = "SELECT * FROM FILM AS f " +
-                        "JOIN RATING AS r ON f.RATING_ID = r.RATING_ID " +
-                        "WHERE f.FILM_ID IN ( " +
-                            "SELECT FILM_ID FROM LIKES " +
-                                "WHERE USER_ID IN ( " +
-                                    "SELECT l1.USER_ID FROM LIKES AS l1 " +
-                                        "RIGHT JOIN LIKES AS l2 ON l2.FILM_ID = l1.FILM_ID " +
-                                        "GROUP BY l1.USER_ID, l2.USER_ID " +
-                                        "HAVING l1.USER_ID IS NOT NULL " +
-                                        "AND l1.USER_ID != ? AND l2.USER_ID = ? " +
-                                        "ORDER BY COUNT(l1.USER_ID) DESC " +
-                                ") " +
-                                "AND f.FILM_ID NOT IN (  " +
-                                    "SELECT FILM_ID FROM LIKES " +
-                                    "WHERE USER_ID = ? " +
-                                ") " +
-                        ");";
+                "JOIN RATING AS r ON f.RATING_ID = r.RATING_ID " +
+                "WHERE f.FILM_ID IN ( " +
+                "SELECT FILM_ID FROM LIKES " +
+                "WHERE USER_ID IN ( " +
+                "SELECT l1.USER_ID FROM LIKES AS l1 " +
+                "RIGHT JOIN LIKES AS l2 ON l2.FILM_ID = l1.FILM_ID " +
+                "GROUP BY l1.USER_ID, l2.USER_ID " +
+                "HAVING l1.USER_ID IS NOT NULL " +
+                "AND l1.USER_ID != ? AND l2.USER_ID = ? " +
+                "ORDER BY COUNT(l1.USER_ID) DESC " +
+                ") " +
+                "AND f.FILM_ID NOT IN (  " +
+                "SELECT FILM_ID FROM LIKES " +
+                "WHERE USER_ID = ? " +
+                ") " +
+                ");";
         return jdbc.query(sql, JdbcUserRepository::createFilm, userId, userId, userId);
     }
 }

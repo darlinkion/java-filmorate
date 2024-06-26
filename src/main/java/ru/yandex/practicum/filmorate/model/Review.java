@@ -2,12 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import org.hibernate.annotations.ColumnDefault;
+import lombok.*;
 
 @ToString
 @Getter
@@ -23,5 +18,5 @@ public class Review {
     Integer userId;
     @NotNull
     Integer filmId;
-    int useful=0;
+    int useful = 0;
 }

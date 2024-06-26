@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Review;
@@ -48,18 +47,18 @@ public class ReviewService {
     public void setLike(int reviewId, int userId) {
         jdbcUserRepository.get(userId);
         get(reviewId);
-        jdbcReviewRepository.setLike(reviewId,userId);
+        jdbcReviewRepository.setLike(reviewId, userId);
     }
 
     public void setDislike(int reviewId, int userId) {
         get(reviewId);
         jdbcUserRepository.get(userId);
-        jdbcReviewRepository.setDislike(reviewId,userId);
+        jdbcReviewRepository.setDislike(reviewId, userId);
     }
 
     public void removeGrade(int reviewId, int userId) {
         get(reviewId);
         jdbcUserRepository.get(userId);
-        jdbcReviewRepository.removeGrade(reviewId,userId);
+        jdbcReviewRepository.removeGrade(reviewId, userId);
     }
 }
