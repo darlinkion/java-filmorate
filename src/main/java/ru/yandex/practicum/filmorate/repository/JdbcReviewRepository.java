@@ -3,8 +3,6 @@ package ru.yandex.practicum.filmorate.repository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
@@ -16,7 +14,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Repository
@@ -62,22 +59,14 @@ public class JdbcReviewRepository {
 
     public Review update(Review review) {
 
-        int useful = calculateUseful(review);
-        review.setUseful(useful);
-
-        SqlParameterSource params = new MapSqlParameterSource()
-                .addValues(Map.of("content", review.getContent()))
-                .addValues(Map.of("isPositive", review.getIsPositive()))
-                .addValues(Map.of("userId", review.getUserId()))
-                .addValues(Map.of("filmId", review.getFilmId()))
-                .addValues(Map.of("useful", review.getUseful()))
-                .addValues((Map.of("reviewId", review.getReviewId())));
-
-        jdbc.update("UPDATE REVIEWS SET CONTENT = :content, IS_POSITIVE = :isPositive, " +
-                "USER_ID = :userId, FILM_ID = :filmId, USEFUL = :useful " +
-                "WHERE REVIEW_ID=:reviewId", params);
-
-        return review;
+        int id = review.getReviewId();
+        jdbc.update("UPDATE REVIEWS SET  CONTENT=?, IS_POSITIVE=?, USEFUL=? " +
+                        "WHERE REVIEW_ID=?;",
+                review.getContent(),
+                review.getIsPositive(),
+                review.getUseful(),
+                id);
+        return get(id);
     }
 
     public void deleteById(int id) {
@@ -142,23 +131,14 @@ public class JdbcReviewRepository {
     }
 
     public void setLike(int reviewId, int userId) {
-        SqlParameterSource params = new MapSqlParameterSource()
-                .addValues(Map.of("reviewId", reviewId))
-                .addValues(Map.of("userId", userId))
-                .addValues(Map.of("isLike", 1));
 
-        jdbc.update("INSERT INTO GRADE_REVIEWS VALUES (USER_ID,REVIEW_ID," +
-                "IS_LIKE) VALUES (:reviewId,:userId,:isLike)", params);
+        jdbc.update("INSERT INTO GRADE_REVIEWS (USER_ID,REVIEW_ID," +
+                "IS_LIKE) VALUES (?,?,?)", userId, reviewId, 1);
     }
 
     public void setDislike(int reviewId, int userId) {
-        SqlParameterSource params = new MapSqlParameterSource()
-                .addValues(Map.of("reviewId", reviewId))
-                .addValues(Map.of("userId", userId))
-                .addValues(Map.of("isLike", -1));
-
-        jdbc.update("INSERT INTO GRADE_REVIEWS VALUES (USER_ID,REVIEW_ID," +
-                "IS_LIKE) VALUES (:reviewId,:userId,:isLike)", params);
+        jdbc.update("INSERT INTO GRADE_REVIEWS (USER_ID,REVIEW_ID," +
+                "IS_LIKE) VALUES (?,?,?)", userId, reviewId, -1);
     }
 
     public void removeGrade(int reviewId, int userId) {
@@ -173,5 +153,4 @@ public class JdbcReviewRepository {
         Integer sumIsLike = jdbc.queryForObject(sqlQuery, Integer.class, review.getReviewId());
         return sumIsLike != null ? sumIsLike : 0;
     }
-
 }

@@ -23,7 +23,7 @@ public class ReviewService {
     }
 
     public Review update(Review temp) {
-        get(temp.getReviewId());
+        //get(temp.getReviewId());
         return jdbcReviewRepository.update(temp);
     }
 
