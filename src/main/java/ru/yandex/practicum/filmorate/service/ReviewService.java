@@ -45,14 +45,10 @@ public class ReviewService {
     }
 
     public void setLike(int reviewId, int userId) {
-        jdbcUserRepository.get(userId);
-        get(reviewId);
         jdbcReviewRepository.setLike(reviewId, userId);
     }
 
     public void setDislike(int reviewId, int userId) {
-        jdbcUserRepository.get(userId);
-        get(reviewId);
         jdbcReviewRepository.setDislike(reviewId, userId);
     }
 
