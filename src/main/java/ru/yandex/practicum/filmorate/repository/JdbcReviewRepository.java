@@ -134,26 +134,32 @@ public class JdbcReviewRepository {
 
     public void setLike(int reviewId, int userId) {
         if (existsGrade(reviewId, userId)) {
-            jdbc.update("UPDATE GRADE_REVIEWS SET IS_LIKE = ? WHERE REVIEW_ID = ? AND USER_ID = ?", 1, reviewId, userId);
+            jdbc.update("UPDATE GRADE_REVIEWS SET IS_LIKE = ? WHERE REVIEW_ID = ? AND USER_ID = ?",
+                    1, reviewId, userId);
         } else {
-            jdbc.update("INSERT INTO GRADE_REVIEWS (USER_ID, REVIEW_ID, IS_LIKE) VALUES (?, ?, ?)", userId, reviewId, 1);
+            jdbc.update("INSERT INTO GRADE_REVIEWS (USER_ID, REVIEW_ID, IS_LIKE) VALUES (?, ?, ?)",
+                    userId, reviewId, 1);
         }
     }
 
     public void setDislike(int reviewId, int userId) {
         if (existsGrade(reviewId, userId)) {
-            jdbc.update("UPDATE GRADE_REVIEWS SET IS_LIKE = ? WHERE REVIEW_ID = ? AND USER_ID = ?", -1, reviewId, userId);
+            jdbc.update("UPDATE GRADE_REVIEWS SET IS_LIKE = ? WHERE REVIEW_ID = ? AND USER_ID = ?",
+                    -1, reviewId, userId);
         } else {
-            jdbc.update("INSERT INTO GRADE_REVIEWS (USER_ID, REVIEW_ID, IS_LIKE) VALUES (?, ?, ?)", userId, reviewId, -1);
+            jdbc.update("INSERT INTO GRADE_REVIEWS (USER_ID, REVIEW_ID, IS_LIKE) VALUES (?, ?, ?)",
+                    userId, reviewId, -1);
         }
     }
 
     public void removeGrade(int reviewId, int userId) {
-        jdbc.update("DELETE FROM GRADE_REVIEWS WHERE REVIEW_ID = ? AND USER_ID = ?", reviewId, userId);
+        jdbc.update("DELETE FROM GRADE_REVIEWS WHERE REVIEW_ID = ? AND USER_ID = ?",
+                reviewId, userId);
     }
 
     private boolean existsGrade(int reviewId, int userId) {
-        Integer count = jdbc.queryForObject("SELECT COUNT(*) FROM GRADE_REVIEWS WHERE REVIEW_ID = ? AND USER_ID = ?", Integer.class, reviewId, userId);
+        Integer count = jdbc.queryForObject("SELECT COUNT(*) FROM GRADE_REVIEWS WHERE REVIEW_ID = ? AND USER_ID = ?",
+                Integer.class, reviewId, userId);
         return count != null && count > 0;
     }
 
