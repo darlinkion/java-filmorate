@@ -104,6 +104,7 @@ public class JdbcReviewRepository {
                 " USEFUL" +
                 " FROM REVIEWS " +
                 "LIMIT ?;";
+
         List<Review> reviews = jdbc.query(sqlQuery, JdbcReviewRepository::createReview, count);
 
         return reviews.stream()
@@ -122,6 +123,7 @@ public class JdbcReviewRepository {
                 " FROM REVIEWS " +
                 " WHERE FILM_ID=?" +
                 " LIMIT ?;";
+
         List<Review> reviews = jdbc.query(sqlQuery, JdbcReviewRepository::createReview, filmId, count);
 
         return reviews.stream()
