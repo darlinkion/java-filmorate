@@ -7,15 +7,20 @@ import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 
+import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -25,21 +30,25 @@ public class JdbcReviewRepository {
 
     public Review createReview(Review review) {
 
-        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-        SqlParameterSource params= new MapSqlParameterSource()
-                .addValues(Map.of("content", review.getContent()))
-                .addValues(Map.of("isPositive", review.getIsPositive()))
-                .addValues(Map.of("userId",review.getUserId()))
-                .addValues(Map.of("filmId", review.getFilmId()))
-                .addValues(Map.of("useful", review.getUseful()));
+        String sqlQuery = "INSERT INTO REVIEWS (CONTENT, IS_POSITIVE, USER_ID, FILM_ID, USEFUL) VALUES(?, ?, ?, ?, ?)";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        jdbc.update("INSERT INTO REVIEWS VALUES (CONTENT,IS_POSITIVE," +
-                "USER_ID,FILM_ID,USEFUL)" +
-                " VALUES (:content,:isPositive,:userId,:filmId,:useful)"
-                ,params, keyHolder, new String[]{"REVIEW_ID"});
+        jdbc.update(connection -> {
+            PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery, new String[]{"REVIEW_ID"});
+            preparedStatement.setString(1, review.getContent());
+            preparedStatement.setBoolean(2, review.getIsPositive());
+            preparedStatement.setInt(3, review.getUserId());
+            preparedStatement.setInt(4, review.getFilmId());
+            preparedStatement.setInt(5, review.getUseful());
+            return preparedStatement;
+        }, keyHolder);
 
-        int reviewId = keyHolder.getKeyAs(int.class );
+        Integer reviewId = keyHolder.getKeyAs(Integer.class);
         review.setReviewId(reviewId);
+
+        if (reviewId == null) {
+            throw new NotFoundException("Отзыв не добавлен");
+        }
         return review;
     }
 
@@ -73,15 +82,17 @@ public class JdbcReviewRepository {
                 " IS_POSITIVE," +
                 " USER_ID," +
                 " FILM_ID," +
-                " USEFUL" +
+                " USEFUL " +
                 "FROM REVIEWS " +
                 "WHERE REVIEW_ID = ?;";
+
         List<Review> reviews=jdbc.query(sqlQuery, JdbcReviewRepository::createReview,reviewId);
         if(reviews.size()!=1){
             log.error("Отзыв с идентификатором {} не найден.", reviewId);
             throw new NotFoundException("Отзыв не найден id="+reviewId);
         }
         Review review=reviews.getFirst();
+        review.setUseful(calculateUseful(review));
         log.info("Найден отзыв -->"+review);
         return review;
     }
@@ -93,12 +104,14 @@ public class JdbcReviewRepository {
                 " USER_ID," +
                 " FILM_ID," +
                 " USEFUL" +
-                "FROM REVIEWS " +
-                "LIMIT ?" +
-                "ORDER BY USEFUL DESC;";//Добавить сортировку по useful
+                " FROM REVIEWS " +
+                "LIMIT ?;";
         List<Review> reviews=jdbc.query(sqlQuery, JdbcReviewRepository::createReview,count);
 
-        return reviews;
+        return reviews.stream()
+                .peek(review -> review.setUseful(calculateUseful(review)))
+                .sorted(Comparator.comparingInt(Review::getUseful).reversed())
+                .collect(Collectors.toList());
     }
     public List<Review> getAllByFilmId(int filmId, int count){
         String sqlQuery = "SELECT REVIEW_ID," +
@@ -109,41 +122,37 @@ public class JdbcReviewRepository {
                 " USEFUL" +
                 " FROM REVIEWS " +
                 " WHERE FILM_ID=?" +
-                " LIMIT ?" +
-                " ORDER BY USEFUL DESC;";
+                " LIMIT ?;";
         List<Review> reviews=jdbc.query(sqlQuery, JdbcReviewRepository::createReview,filmId,count);
 
-        return reviews;
+        return reviews.stream()
+                .peek(review -> review.setUseful(calculateUseful(review)))
+                .sorted(Comparator.comparingInt(Review::getUseful).reversed())
+                .collect(Collectors.toList());
     }
 
     public void setLike(int reviewId, int userId){
-        Review review =get(reviewId);
-        int useful= review.getUseful();
-        useful++;
-
         SqlParameterSource params= new MapSqlParameterSource()
                 .addValues(Map.of("reviewId", reviewId))
                 .addValues(Map.of("userId", userId))
                 .addValues(Map.of("isLike", 1));
 
-
         jdbc.update("INSERT INTO GRADE_REVIEWS VALUES (USER_ID,REVIEW_ID," +
                         "IS_LIKE) VALUES (:reviewId,:userId,:isLike)",params);
-
-
-        review.setReviewId(reviewId); //Доделать логику лайков
     }
 
     public void setDislike(int reviewId, int userId){
+        SqlParameterSource params= new MapSqlParameterSource()
+                .addValues(Map.of("reviewId", reviewId))
+                .addValues(Map.of("userId", userId))
+                .addValues(Map.of("isLike", -1));
 
+        jdbc.update("INSERT INTO GRADE_REVIEWS VALUES (USER_ID,REVIEW_ID," +
+                "IS_LIKE) VALUES (:reviewId,:userId,:isLike)",params);
     }
 
-    public void removeLike(int reviewId, int userId){
-
-    }
-
-    public void removeDislike(int reviewId,int userId){
-
+    public void removeGrade(int reviewId, int userId){
+        jdbc.update("DELETE FROM GRADE_REVIEWS WHERE REVIEW_ID=? AND USER_ID=?",reviewId,userId);
     }
 
     private static Review createReview(ResultSet resultSet, int row) throws SQLException {
@@ -153,7 +162,7 @@ public class JdbcReviewRepository {
         review.setIsPositive(resultSet.getBoolean("IS_POSITIVE"));
         review.setUserId(resultSet.getInt("USER_ID"));
         review.setFilmId(resultSet.getInt("FILM_ID"));
-        review.setUseful(resultSet.getInt("USERFUL"));
+        review.setUseful(resultSet.getInt("USEFUL"));
         return review;
     }
 

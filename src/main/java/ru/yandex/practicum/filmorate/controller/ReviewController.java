@@ -23,7 +23,7 @@ import java.util.List;
 @RequestMapping("/reviews")
 @RequiredArgsConstructor
 public class ReviewController {
-    ReviewService reviewService;
+    private final ReviewService reviewService;
 
     @PostMapping
     public Review create(@Valid @RequestBody Review review) {
@@ -47,7 +47,7 @@ public class ReviewController {
 
     @GetMapping("{id}")
     public Review get(@PathVariable @Positive int id) {
-        Review tempReview = null;
+        Review tempReview=reviewService.get(id);
         log.info("Get review from DataBase  ==>" + tempReview);
         return tempReview;
     }
@@ -75,13 +75,13 @@ public class ReviewController {
 
     @DeleteMapping("{id}/like/{userId}")
     public void removeLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
-        reviewService.removeLike(id,userId);
+        reviewService.removeGrade(id,userId);
         log.info("Delete like review id ==>" + id);
     }
 
     @DeleteMapping("{id}/dislike/{userId}")
     public void removeDislike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
-        reviewService.removeDislike(id,userId);
+        reviewService.removeGrade(id,userId);
         log.info("Delete dislike review id ==>" + id);
     }
 }

@@ -15,8 +15,11 @@ import java.util.List;
 public class ReviewService {
     private final JdbcReviewRepository jdbcReviewRepository;
     private final JdbcUserRepository jdbcUserRepository;
+    private final JdbcFilmIRepository jdbcFilmIRepository;
 
     public Review create(Review temp) {
+        jdbcUserRepository.get(temp.getUserId());
+        jdbcFilmIRepository.get(temp.getFilmId());
         return jdbcReviewRepository.createReview(temp);
     }
 
@@ -49,14 +52,14 @@ public class ReviewService {
     }
 
     public void setDislike(int reviewId, int userId) {
-
+        get(reviewId);
+        jdbcUserRepository.get(userId);
+        jdbcReviewRepository.setDislike(reviewId,userId);
     }
 
-    public void removeLike(int reviewId, int userId) {
-
-    }
-
-    public void removeDislike(int reviewId, int userId) {
-
+    public void removeGrade(int reviewId, int userId) {
+        get(reviewId);
+        jdbcUserRepository.get(userId);
+        jdbcReviewRepository.removeGrade(reviewId,userId);
     }
 }
