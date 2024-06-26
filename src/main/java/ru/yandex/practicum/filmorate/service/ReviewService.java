@@ -51,8 +51,8 @@ public class ReviewService {
     }
 
     public void setDislike(int reviewId, int userId) {
-        get(reviewId);
         jdbcUserRepository.get(userId);
+        get(reviewId);
         jdbcReviewRepository.setDislike(reviewId, userId);
     }
 
