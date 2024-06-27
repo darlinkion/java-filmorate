@@ -84,7 +84,7 @@ public class FilmController {
     @GetMapping("/common")
     public List<Film> getMutualFilms(@RequestParam @Positive int userId, @RequestParam @Positive int friendId) {
         List<Film> tempListMutualFilms = filmService.getMutualFilms(userId, friendId);
-        log.info("Get all films mutual from DataBase ==>" + tempListMutualFilms);
+        log.info("Friend films mutual from DataBase ==>" + tempListMutualFilms);
         return tempListMutualFilms;
     }
 }
