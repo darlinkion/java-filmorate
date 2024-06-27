@@ -4,9 +4,16 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
@@ -74,9 +81,9 @@ public class FilmController {
         return films;
     }
 
-    @GetMapping("{userId}")
-    public List<Film> getMutualFilms(@PathVariable @Positive int userId, @PathVariable @Positive int friendId) {
-        List<Film> tempListMutualFilms = filmService.getMutualFilms(userId,friendId);
+    @GetMapping("/common")
+    public List<Film> getMutualFilms(@RequestParam @Positive int userId, @RequestParam @Positive int friendId) {
+        List<Film> tempListMutualFilms = filmService.getMutualFilms(userId, friendId);
         log.info("Get all films mutual from DataBase ==>" + tempListMutualFilms);
         return tempListMutualFilms;
     }

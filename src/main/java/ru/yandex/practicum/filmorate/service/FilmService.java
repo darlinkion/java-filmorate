@@ -81,10 +81,10 @@ public class FilmService implements BaseService<Film> {
         return films;
     }
 
-    public List<Film> getMutualFilms(int userId, int friendId){
+    public List<Film> getMutualFilms(int userId, int friendId) {
         jdbcUserRepository.get(userId);
         jdbcUserRepository.get(friendId);
-        return jdbcFilmIRepository.getMutualFilms(userId,friendId);
+        return jdbcFilmIRepository.getMutualFilms(userId, friendId);
     }
 
     private void checkRatingAndGenres(Film film) {
