@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -256,4 +257,26 @@ public class JdbcFilmIRepository implements IRepository<Film> {
         return list;
     }
 
+    public List<Film> getMutualFilms(int userID, int friendId) {
+        String sql = "SELECT F.FILM_ID, " +
+                "F.NAME, " +
+                "F.DESCRIPTION, " +
+                "F.RELEASE_DATE, " +
+                "F.DURATION, " +
+                "F.RATING_ID, " +
+                "R.RATING_TITLE " +
+                "FROM FILM AS F " +
+                "INNER JOIN LIKES AS L1 ON F.FILM_ID = L1.FILM_ID " +
+                "INNER JOIN LIKES AS L2 ON F.FILM_ID = L2.FILM_ID " +
+                "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID " +
+                "WHERE L1.USER_ID = ? AND L2.USER_ID = ? " +
+                "ORDER BY F.FILM_ID;";
+
+        List<Film> list = jdbc.query(sql, JdbcFilmIRepository::createFilm, userID, friendId);
+
+        for (Film film : list) {
+            genresForFilm(film);
+        }
+        return list;
+    }
 }

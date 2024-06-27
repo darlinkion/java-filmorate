@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
@@ -71,5 +72,12 @@ public class FilmController {
         List<Film> films = filmService.getPopularFilms(count, genreId, year);
         log.info("Most popular films ==>" + films);
         return films;
+    }
+
+    @GetMapping("{userId}")
+    public List<Film> getMutualFilms(@PathVariable @Positive int userId, @PathVariable @Positive int friendId) {
+        List<Film> tempListMutualFilms = filmService.getMutualFilms(userId,friendId);
+        log.info("Get all films mutual from DataBase ==>" + tempListMutualFilms);
+        return tempListMutualFilms;
     }
 }
