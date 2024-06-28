@@ -8,7 +8,7 @@ import lombok.*;
 @Setter
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class Genre extends BaseModel {
+public class Director extends BaseModel {
     @NotBlank
     private String name;
 }
