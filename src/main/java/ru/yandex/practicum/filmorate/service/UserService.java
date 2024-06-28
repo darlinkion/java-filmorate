@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.JdbcUserRepository;
 
@@ -41,14 +40,6 @@ public class UserService implements BaseService<User> {
         return user.get();
     }
 
-    @Override
-    public void deleteById(int id) {
-        if (get(id) == null) {
-            throw new NotFoundException("Нет такого пользователя по id " + id);
-        }
-        jdbcUserRepository.deleteById(id);
-    }
-
     public void addFriends(int userId, int friendId) {
         get(userId);
         get(friendId);
@@ -70,12 +61,8 @@ public class UserService implements BaseService<User> {
         return jdbcUserRepository.getAllMutualFriends(userId, friendId);
     }
 
-    public List<Film> getRecommendationFilms(long userId) {
-        return jdbcUserRepository.getRecommendationFilms(userId);
-    }
-
     private void checkName(User user) {
-        if (user.getName() == null || user.getName().isEmpty()) {
+        if (user.getName() == null) {
             user.setName(user.getLogin());
         }
     }

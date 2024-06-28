@@ -5,10 +5,11 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.repository.*;
+import ru.yandex.practicum.filmorate.repository.JdbcFilmIRepository;
+import ru.yandex.practicum.filmorate.repository.JdbcGenreRepository;
+import ru.yandex.practicum.filmorate.repository.JdbcLikesRepository;
+import ru.yandex.practicum.filmorate.repository.JdbcMpaRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -20,7 +21,6 @@ public class FilmService implements BaseService<Film> {
     private final JdbcFilmIRepository jdbcFilmIRepository;
     private final JdbcGenreRepository jdbcGenreRepository;
     private final JdbcMpaRepository jdbcMpaRepository;
-    private final JdbcUserRepository jdbcUserRepository;
 
     @Override
     public Film create(Film film) {
@@ -49,42 +49,17 @@ public class FilmService implements BaseService<Film> {
         return tempFilm.get();
     }
 
-    public void deleteById(int id) {
-        if (get(id) == null) {
-            throw new NotFoundException("Нет такого фильма по id " + id);
-        }
-        jdbcFilmIRepository.deleteById(id);
-    }
-
     public void setLike(int filmId, int userId) {
-        Film film = get(filmId);
-        User user = jdbcUserRepository.get(userId);
-        likesRepository.setLike(film.getId(), user.getId());
+        likesRepository.setLike(filmId, userId);
     }
 
     public void deleteLike(int filmId, int userId) {
         likesRepository.deleteLike(filmId, userId);
     }
 
-    public List<Film> getPopularFilms(int countFilm, Integer genreId, Integer year) {
-        List<Film> films = new ArrayList<>();
-        if (genreId == null && year == null)
-            return jdbcFilmIRepository.getPopularFilms(countFilm);
-        if (year == null)
-            return jdbcFilmIRepository.getPopularFilmsWithGenre(countFilm, genreId);
-
-        if (genreId == null) {
-            return jdbcFilmIRepository.getPopularFilmsWithYear(countFilm, year);
-        } else {
-            films = jdbcFilmIRepository.getPopularFilmsWithYearAndGenre(countFilm, genreId, year);
-        }
+    public List<Film> getPopularFilms(int countFilm) {
+        List<Film> films = jdbcFilmIRepository.getPopularFilms(countFilm);
         return films;
-    }
-
-    public List<Film> getMutualFilms(int userId, int friendId) {
-        jdbcUserRepository.get(userId);
-        jdbcUserRepository.get(friendId);
-        return jdbcFilmIRepository.getMutualFilms(userId, friendId);
     }
 
     private void checkRatingAndGenres(Film film) {
@@ -97,5 +72,23 @@ public class FilmService implements BaseService<Film> {
                 jdbcGenreRepository.get(genreId);
             }
         }
+    }
+
+    public List<Film> getAllDirectorsFilms(int countFilm, String sortType) {
+        List<Film> films = jdbcFilmIRepository.getAllDirectorsFilms(countFilm, sortType);
+        return films;
+    }
+
+    public List<Film> getAllDirectors() {
+        List<Film> films = jdbcFilmIRepository.getAllDirectors();
+        return films;
+    }
+
+    public Film getDirectorById(int id, ) {
+        Optional<Film> tempFilm = Optional.ofNullable(jdbcFilmIRepository.get(id));
+        if (tempFilm.isEmpty()) {
+            throw new NotFoundException("Нет такого фильма по id " + id);
+        }
+        return tempFilm.get();
     }
 }

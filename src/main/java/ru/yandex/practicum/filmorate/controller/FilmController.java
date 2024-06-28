@@ -4,15 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -53,12 +45,6 @@ public class FilmController {
         return tempFilm;
     }
 
-    @DeleteMapping("{id}")
-    public void deleteById(@PathVariable int id) {
-        filmService.deleteById(id);
-        log.info("Delete film from DataBase with id ==>" + id);
-    }
-
     @PutMapping("{id}/like/{userId}")
     public void setLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
         filmService.setLike(id, userId);
@@ -72,19 +58,23 @@ public class FilmController {
     }
 
     @GetMapping("popular")
-    public List<Film> getPopularFilms(
-            @RequestParam(defaultValue = "10") Integer count,
-            @RequestParam(required = false) Integer genreId,
-            @RequestParam(required = false) Integer year) {
-        List<Film> films = filmService.getPopularFilms(count, genreId, year);
+    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") Integer count) {
+        List<Film> films = filmService.getPopularFilms(count);
         log.info("Most popular films ==>" + films);
         return films;
     }
 
-    @GetMapping("/common")
-    public List<Film> getMutualFilms(@RequestParam @Positive int userId, @RequestParam @Positive int friendId) {
-        List<Film> tempListMutualFilms = filmService.getMutualFilms(userId, friendId);
-        log.info("Friend films mutual from DataBase ==>" + tempListMutualFilms);
-        return tempListMutualFilms;
+    @GetMapping("director/{directorId}?sortBy=year")
+    public List<Film> getAllDirectorFilm(@PathVariable @Positive int directorId) {
+        List<Film> films = filmService.getAllDirectorsFilms(directorId, "RELEASE_DATE");
+        log.info("Most popular films ==>" + films);
+        return films;
+    }
+
+    @GetMapping("director/{directorId}?sortBy=likes")
+    public List<Film> getAllDirectorFilm(@PathVariable @Positive int directorId) {
+        List<Film> films = filmService.getAllDirectorsFilms(directorId, "likes");
+        log.info("Most popular films ==>" + films);
+        return films;
     }
 }

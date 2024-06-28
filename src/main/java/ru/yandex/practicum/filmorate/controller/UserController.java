@@ -5,7 +5,6 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -46,12 +45,6 @@ public class UserController {
         return tempUser;
     }
 
-    @DeleteMapping("{id}")
-    public void deleteById(@PathVariable int id) {
-        userService.deleteById(id);
-        log.info("Delete user from DataBase with id ==>" + id);
-    }
-
     @PutMapping("{id}/friends/{friendId}")
     public void addFriends(@PathVariable @Positive int id, @PathVariable @Positive int friendId) {
         userService.addFriends(id, friendId);
@@ -74,12 +67,5 @@ public class UserController {
         List<User> tempListMutualFriends = userService.getAllMutualFriends(id, otherId);
         log.info("Get all user mutual friends from DataBase ==>" + tempListMutualFriends);
         return tempListMutualFriends;
-    }
-
-    @GetMapping("/{userId}/recommendations")
-    public List<Film> getRecommendationFilms(@PathVariable @Positive long userId) {
-        List<Film> recommendationFilms = userService.getRecommendationFilms(userId);
-        log.info("For user with userId = " + userId + " Get recommendation films ==> " + recommendationFilms);
-        return recommendationFilms;
     }
 }

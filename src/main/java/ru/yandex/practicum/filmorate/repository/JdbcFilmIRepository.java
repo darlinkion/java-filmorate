@@ -19,7 +19,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-
 @Repository
 @RequiredArgsConstructor
 @Slf4j
@@ -36,12 +35,13 @@ public class JdbcFilmIRepository implements IRepository<Film> {
         film.setMpa(new Mpa());
         film.getMpa().setId(resultSet.getInt("RATING_ID"));
         film.getMpa().setName(resultSet.getString("RATING_TITLE"));
+        film.setDirectorID(resultSet.getInt("DIRECTOR_ID"))
         return film;
     }
 
     @Override
     public Film create(Film film) {
-        String sqlQuery = "INSERT INTO FILM (NAME, DESCRIPTION, RELEASE_DATE, DURATION, RATING_ID) VALUES(?, ?, ?, ?, ?)";
+        String sqlQuery = "INSERT INTO FILM (NAME, DESCRIPTION, RELEASE_DATE, DURATION, RATING_ID, DIRECTOR_ID) VALUES(?, ?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbc.update(connection -> {
@@ -51,6 +51,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
             preparedStatement.setDate(3, Date.valueOf(film.getReleaseDate()));
             preparedStatement.setInt(4, film.getDuration());
             preparedStatement.setInt(5, film.getMpa().getId());
+            preparedStatement.setInt(6, film.getDirectorID());
             return preparedStatement;
         }, keyHolder);
 
@@ -92,8 +93,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 jdbc.update("INSERT INTO FILM_GENRE (FILM_ID, GENRE_ID) VALUES(?, ?)", id, genre.getId());
             }
         }
-
-        return get(film.getId());
+        return film;
     }
 
     @Override
@@ -129,22 +129,11 @@ public class JdbcFilmIRepository implements IRepository<Film> {
         List<Film> films = jdbc.query(sqlQuery, JdbcFilmIRepository::createFilm, id);
         if (films.size() != 1) {
             log.info("Фильм с идентификатором {} не найден.", id);
-            throw new NotFoundException("Фильм с идентификатором id = " + id + " не найден.");
+            throw new NotFoundException("Пользователь с идентификатором id не найден.");
         }
         log.info("Найден фильм: {} {}", id, films.getFirst().getName());
         genresForFilm(films.getFirst());
         return films.getFirst();
-    }
-
-    @Override
-    public void deleteById(int id) {
-        try {
-            String sql = "delete from film where film_id = ?";
-            jdbc.update(sql, id);
-        } catch (Exception e) {
-            log.error("Ошибка в удалении фильма по идентификатору из БД: {}", e.getMessage(), e);
-            throw new NotFoundException("Ошибка в удалении фильма по идентификатору из БД:");
-        }
     }
 
     private Film genresForFilm(Film film) {
@@ -178,104 +167,40 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "GROUP BY F.FILM_ID " +
                 "ORDER BY COUNT(L.FILM_ID) DESC " +
                 "LIMIT ?;", JdbcFilmIRepository::createFilm, countFilm);
-
-        for (Film film : list) {
-            genresForFilm(film);
-        }
         return list;
     }
 
-    public List<Film> getPopularFilmsWithGenre(int countFilm, int genreId) {
+    public List<Film> getAllDirectorsFilms(int directorID, String sortType) { // ИСПОЛЬЗУЕТСЯ В FILMCONTROLLER
+        if (sortType == "likes") {
+            List<Film> list = jdbc.query("SELECT F.NAME, " +
+                    "COUNT(L.FILM_ID) " +
+                    "FROM LIKES AS L" +
+                    "LEFT JOIN FILM AS F ON L.FILM_ID = F.FILM_ID " +
+                    "WHERE F.DIRECTOR_ID = " + directorID + " " +
+                    "GROUP BY L.FILM_ID " +
+                    "F.NAME " +
+                    "ORDER BY COUNT(L.FILM_ID) DESC;"
+                    )
+        }
+        List<Film> list = jdbc.query("SELECT FILM_ID, " +
+                "NAME, " +
+                "DESCRIPTION, " +
+                "RELEASE_DATE, " +
+                "DURATION, " +
+                "RATING_ID, " +
+                "DIRECTOR_ID " +
+                "FROM FILM " +
+                "WHERE DIRECTOR_ID = " + directorID +
+                "ORDER_BY " + sortType + ";")
+    }
 
-        List<Film> list = jdbc.query("SELECT F.FILM_ID, " +
-                "F.NAME, " +
-                "F.DESCRIPTION, " +
-                "F.RELEASE_DATE, " +
-                "F.DURATION, " +
-                "F.RATING_ID, " +
-                "R.RATING_TITLE, " +
-                "COUNT(L.FILM_ID) " +
+    public List<Film> getAllDirectors() {
+        List<Film> list = jdbc.query("F.DIRECTOR_ID" +
+                "D.DIRECTOR_NAME"
                 "FROM FILM AS F " +
-                "LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
-                "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID " +
-                "INNER JOIN FILM_GENRE AS FG ON F.FILM_ID = FG.FILM_ID " +
-                "WHERE FG.GENRE_ID=? " +
-                "GROUP BY F.FILM_ID " +
-                "ORDER BY COUNT(L.FILM_ID) DESC " +
-                " LIMIT ?;", JdbcFilmIRepository::createFilm, genreId, countFilm);
-        for (Film film : list) {
-            genresForFilm(film);
-        }
-        return list;
+                "LEFT JOIN DIRECTORS AS D ON F.DIRECTORS_ID = D.DIRECTORS_ID" +
+                "GROUP BY F.DIECTORS_ID")
     }
 
-    public List<Film> getPopularFilmsWithYear(int countFilm, int year) {
-
-        List<Film> list = jdbc.query("SELECT F.FILM_ID, " +
-                "F.NAME, " +
-                "F.DESCRIPTION, " +
-                "F.RELEASE_DATE, " +
-                "F.DURATION, " +
-                "F.RATING_ID, " +
-                "R.RATING_TITLE, " +
-                "COUNT(L.FILM_ID) " +
-                "FROM FILM AS F " +
-                "LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
-                "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID " +
-                "WHERE EXTRACT(YEAR FROM F.RELEASE_DATE)=?" +
-                "GROUP BY F.FILM_ID " +
-                "ORDER BY COUNT(L.FILM_ID) DESC " +
-                "LIMIT ?;", JdbcFilmIRepository::createFilm, year, countFilm);
-        for (Film film : list) {
-            genresForFilm(film);
-        }
-        return list;
-    }
-
-    public List<Film> getPopularFilmsWithYearAndGenre(int countFilm, int genreId, int year) {
-
-        List<Film> list = jdbc.query("SELECT F.FILM_ID, " +
-                "F.NAME, " +
-                "F.DESCRIPTION, " +
-                "F.RELEASE_DATE, " +
-                "F.DURATION, " +
-                "F.RATING_ID, " +
-                "R.RATING_TITLE, " +
-                "COUNT(L.FILM_ID) " +
-                "FROM FILM AS F " +
-                "LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
-                "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID " +
-                "INNER JOIN FILM_GENRE AS FG ON F.FILM_ID = FG.FILM_ID " +
-                "WHERE FG.GENRE_ID=? AND EXTRACT(YEAR FROM F.RELEASE_DATE)=?" +
-                "GROUP BY F.FILM_ID " +
-                "ORDER BY COUNT(L.FILM_ID) DESC " +
-                "LIMIT ?;", JdbcFilmIRepository::createFilm, genreId, year, countFilm);
-        for (Film film : list) {
-            genresForFilm(film);
-        }
-        return list;
-    }
-
-    public List<Film> getMutualFilms(int userID, int friendId) {
-        String sql = "SELECT F.FILM_ID, " +
-                "F.NAME, " +
-                "F.DESCRIPTION, " +
-                "F.RELEASE_DATE, " +
-                "F.DURATION, " +
-                "F.RATING_ID, " +
-                "R.RATING_TITLE " +
-                "FROM FILM AS F " +
-                "INNER JOIN LIKES AS L1 ON F.FILM_ID = L1.FILM_ID " +
-                "INNER JOIN LIKES AS L2 ON F.FILM_ID = L2.FILM_ID " +
-                "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID " +
-                "WHERE L1.USER_ID = ? AND L2.USER_ID = ? " +
-                "ORDER BY F.FILM_ID;";
-
-        List<Film> list = jdbc.query(sql, JdbcFilmIRepository::createFilm, userID, friendId);
-
-        for (Film film : list) {
-            genresForFilm(film);
-        }
-        return list;
-    }
+    public Film
 }
