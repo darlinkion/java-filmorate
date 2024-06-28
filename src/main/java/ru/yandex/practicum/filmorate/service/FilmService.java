@@ -73,4 +73,22 @@ public class FilmService implements BaseService<Film> {
             }
         }
     }
+
+    public List<Film> getAllDirectorsFilms(int countFilm, String sortType) {
+        List<Film> films = jdbcFilmIRepository.getAllDirectorsFilms(countFilm, sortType);
+        return films;
+    }
+
+    public List<Film> getAllDirectors() {
+        List<Film> films = jdbcFilmIRepository.getAllDirectors();
+        return films;
+    }
+
+    public Film getDirectorById(int id, ) {
+        Optional<Film> tempFilm = Optional.ofNullable(jdbcFilmIRepository.get(id));
+        if (tempFilm.isEmpty()) {
+            throw new NotFoundException("Нет такого фильма по id " + id);
+        }
+        return tempFilm.get();
+    }
 }
