@@ -304,5 +304,4 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                     "WHERE DIRECTOR_ID = " + directorId + "ORDER_BY " + sortType + ";", JdbcFilmIRepository::createFilm);
         }
     }
-    
 }
