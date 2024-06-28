@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.repository.JdbcDirectorRepository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
