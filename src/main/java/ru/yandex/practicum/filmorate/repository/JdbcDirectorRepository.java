@@ -9,13 +9,8 @@ import ru.yandex.practicum.filmorate.model.*;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
-import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 @Repository
 @RequiredArgsConstructor
