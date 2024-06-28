@@ -36,12 +36,14 @@ public class JdbcFilmIRepository implements IRepository<Film> {
         film.setMpa(new Mpa());
         film.getMpa().setId(resultSet.getInt("RATING_ID"));
         film.getMpa().setName(resultSet.getString("RATING_TITLE"));
+        film.setDirectorId(resultSet.getInt("DIRECTOR_ID"));
         return film;
     }
 
     @Override
     public Film create(Film film) {
-        String sqlQuery = "INSERT INTO FILM (NAME, DESCRIPTION, RELEASE_DATE, DURATION, RATING_ID) VALUES(?, ?, ?, ?, ?)";
+        String sqlQuery = "INSERT INTO FILM (NAME, DESCRIPTION, RELEASE_DATE, DURATION, RATING_ID, DIRECTOR_ID) VALUES(?, ?, ?, ?, ?, ?)";
+        ;
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbc.update(connection -> {
@@ -51,6 +53,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
             preparedStatement.setDate(3, Date.valueOf(film.getReleaseDate()));
             preparedStatement.setInt(4, film.getDuration());
             preparedStatement.setInt(5, film.getMpa().getId());
+            preparedStatement.setInt(6, film.getDirectorId());
             return preparedStatement;
         }, keyHolder);
 
@@ -75,13 +78,14 @@ public class JdbcFilmIRepository implements IRepository<Film> {
     @Override
     public Film update(Film film) {
         int id = film.getId();
-        jdbc.update("UPDATE FILM SET  NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION=?, RATING_ID=? " +
+        jdbc.update("UPDATE FILM SET  NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION=?, RATING_ID=?, DIRECTOR_ID=? " +
                         "WHERE FILM_ID=?;",
                 film.getName(),
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
                 film.getMpa().getId(),
+                film.getDirectorId(),
                 id);
 
         jdbc.update("DELETE FROM FILM_GENRE WHERE FILM_ID=?;", id);
@@ -104,7 +108,8 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                         " F.RELEASE_DATE," +
                         " F.DURATION," +
                         " F.RATING_ID," +
-                        " R.RATING_TITLE " +
+                        " R.RATING_TITLE, " +
+                        " F.DIRECTOR_ID " +
                         "FROM FILM AS F " +
                         "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID;",
                 JdbcFilmIRepository::createFilm);
@@ -122,7 +127,8 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 " F.RELEASE_DATE," +
                 " F.DURATION," +
                 " F.RATING_ID," +
-                " R.RATING_TITLE " +
+                " R.RATING_TITLE, " +
+                " F.DIRECTOR_ID " +
                 "FROM FILM AS F " +
                 "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID " +
                 "WHERE F.FILM_ID = ?;";
@@ -170,6 +176,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "F.RELEASE_DATE, " +
                 "F.DURATION, " +
                 "F.RATING_ID, " +
+                "F.DIRECTOR_ID, " +
                 "R.RATING_TITLE, " +
                 "COUNT(L.FILM_ID) " +
                 "FROM FILM AS F " +
@@ -194,6 +201,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "F.DURATION, " +
                 "F.RATING_ID, " +
                 "R.RATING_TITLE, " +
+                "F.DIRECTOR_ID, " +
                 "COUNT(L.FILM_ID) " +
                 "FROM FILM AS F " +
                 "LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
@@ -218,6 +226,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "F.DURATION, " +
                 "F.RATING_ID, " +
                 "R.RATING_TITLE, " +
+                "F.DIRECTOR_ID, " +
                 "COUNT(L.FILM_ID) " +
                 "FROM FILM AS F " +
                 "LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
@@ -241,6 +250,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "F.DURATION, " +
                 "F.RATING_ID, " +
                 "R.RATING_TITLE, " +
+                "F.DIRECTOR_ID, " +
                 "COUNT(L.FILM_ID) " +
                 "FROM FILM AS F " +
                 "LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
@@ -264,6 +274,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "F.DURATION, " +
                 "F.RATING_ID, " +
                 "R.RATING_TITLE " +
+                "F.DIRECTOR_ID, " +
                 "FROM FILM AS F " +
                 "INNER JOIN LIKES AS L1 ON F.FILM_ID = L1.FILM_ID " +
                 "INNER JOIN LIKES AS L2 ON F.FILM_ID = L2.FILM_ID " +
@@ -277,5 +288,20 @@ public class JdbcFilmIRepository implements IRepository<Film> {
             genresForFilm(film);
         }
         return list;
+    }
+
+    public List<Film> getAllDirectorsFilms(int directorId, String sortType) {
+        if (sortType == "likes") {
+            return jdbc.query("SELECT F.NAME, COUNT(L.FILM_ID) " +
+                    "FROM LIKES AS L LEFT JOIN FILM AS F ON L.FILM_ID = F.FILM_ID " +
+                    "WHERE F.DIRECTOR_ID = " + directorId + " GROUP BY L.FILM_ID " +
+                    "F.NAME  ORDER BY COUNT(L.FILM_ID) DESC;", JdbcFilmIRepository::createFilm);
+        } else {
+            return jdbc.query("SELECT FILM_ID, " + "NAME, " +
+                    "DESCRIPTION, " + "RELEASE_DATE, " +
+                    "DURATION, " + "RATING_ID, " +
+                    "DIRECTOR_ID " + "FROM FILM " +
+                    "WHERE DIRECTOR_ID = " + directorId + "ORDER_BY " + sortType + ";", JdbcFilmIRepository::createFilm);
+        }
     }
 }
