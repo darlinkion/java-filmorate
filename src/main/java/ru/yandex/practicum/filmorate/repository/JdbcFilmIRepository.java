@@ -85,7 +85,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 film.getReleaseDate(),
                 film.getDuration(),
                 film.getMpa().getId(),
-                film.getDirectorId,
+                film.getDirectorId(),
                 id);
 
         jdbc.update("DELETE FROM FILM_GENRE WHERE FILM_ID=?;", id);
