@@ -3,11 +3,15 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.type.EventType;
+import ru.yandex.practicum.filmorate.model.type.OperationType;
 import ru.yandex.practicum.filmorate.repository.*;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +25,7 @@ public class FilmService implements BaseService<Film> {
     private final JdbcGenreRepository jdbcGenreRepository;
     private final JdbcMpaRepository jdbcMpaRepository;
     private final JdbcUserRepository jdbcUserRepository;
+    private final JdbcEventRepository jdbcEventRepository;
 
     @Override
     public Film create(Film film) {
@@ -60,10 +65,14 @@ public class FilmService implements BaseService<Film> {
         Film film = get(filmId);
         User user = jdbcUserRepository.get(userId);
         likesRepository.setLike(film.getId(), user.getId());
+        jdbcEventRepository.addEvent(new Event(Instant.now().toEpochMilli(), userId, EventType.LIKE,
+                OperationType.ADD, filmId));
     }
 
     public void deleteLike(int filmId, int userId) {
         likesRepository.deleteLike(filmId, userId);
+        jdbcEventRepository.addEvent(new Event(Instant.now().toEpochMilli(), userId, EventType.LIKE,
+                OperationType.REMOVE, filmId));
     }
 
     public List<Film> getPopularFilms(int countFilm, Integer genreId, Integer year) {
