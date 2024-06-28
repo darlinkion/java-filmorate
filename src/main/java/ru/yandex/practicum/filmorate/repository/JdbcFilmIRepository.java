@@ -43,6 +43,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
     @Override
     public Film create(Film film) {
         String sqlQuery = "INSERT INTO FILM (NAME, DESCRIPTION, RELEASE_DATE, DURATION, RATING_ID, DIRECTOR_ID) VALUES(?, ?, ?, ?, ?, ?)";
+        ;
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbc.update(connection -> {
@@ -279,5 +280,20 @@ public class JdbcFilmIRepository implements IRepository<Film> {
             genresForFilm(film);
         }
         return list;
+    }
+
+    public List<Film> getAllDirectorsFilms(int directorID, String sortType) {
+        if (sortType == "likes") {
+            return jdbc.query("SELECT F.NAME, COUNT(L.FILM_ID) " +
+                    "FROM LIKES AS L LEFT JOIN FILM AS F ON L.FILM_ID = F.FILM_ID " +
+                    "WHERE F.DIRECTOR_ID = " + directorID + " GROUP BY L.FILM_ID " +
+                    "F.NAME  ORDER BY COUNT(L.FILM_ID) DESC;", JdbcFilmIRepository::createFilm);
+        } else {
+            return jdbc.query("SELECT FILM_ID, " + "NAME, " +
+                    "DESCRIPTION, " + "RELEASE_DATE, " +
+                    "DURATION, " + "RATING_ID, " +
+                    "DIRECTOR_ID " + "FROM FILM " +
+                    "WHERE DIRECTOR_ID = " + directorID + "ORDER_BY " + sortType + ";", JdbcFilmIRepository::createFilm);
+        }
     }
 }

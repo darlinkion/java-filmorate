@@ -16,19 +16,18 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class DirectorService implements BaseService<Film> {
+public class DirectorService {
     private final JdbcLikesRepository likesRepository;
     private final JdbcFilmIRepository jdbcFilmIRepository;
     private final JdbcGenreRepository jdbcGenreRepository;
     private final JdbcMpaRepository jdbcMpaRepository;
-
+    private final JdbcDirectorRepository jdbcDirectorRepository;
 
     public List<Director> getAllDirectors() {
-        List<Director> directors = jdbcDirectorRepository.getAll();
-        return films;
+        return jdbcDirectorRepository.getAll();
     }
 
-    public Film get(int id) {
+    public Director get(int id) {
         Optional<Director> tempDirector = Optional.ofNullable(jdbcDirectorRepository.get(id));
         if (tempDirector.isEmpty()) {
             throw new NotFoundException("Нет такого режисера по id " + id);
@@ -36,19 +35,18 @@ public class DirectorService implements BaseService<Film> {
         return tempDirector.get();
     }
 
-    @Override
+
     public Director create(Director director) {
         return jdbcDirectorRepository.create(director);
     }
 
-    @Override
+
     public Director update(Director director) {
         get(director.getId());
         return jdbcDirectorRepository.update(director);
     }
 
     public void deleteDirector(int directorId) {
-        get(userId);
-        jdbcUserRepository.deleteDirector(userId);
+        jdbcDirectorRepository.deletDirector(directorId);
     }
 }

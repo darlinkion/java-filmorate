@@ -96,12 +96,9 @@ public class FilmController {
     }
 
     @GetMapping("director/{directorId}?sortBy=likes")
-    public List<Film> getAllDirectorFilm(@PathVariable @Positive int directorId) {
+    public List<Film> getAllDirectorFilm1(@PathVariable @Positive int directorId) {
         List<Film> films = filmService.getAllDirectorsFilms(directorId, "likes");
         log.info("Most popular films ==>" + films);
         return films;
     }
-
-
-    
 }
