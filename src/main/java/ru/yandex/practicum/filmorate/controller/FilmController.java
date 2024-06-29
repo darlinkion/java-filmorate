@@ -87,4 +87,14 @@ public class FilmController {
         log.info("Friend films mutual from DataBase ==>" + tempListMutualFilms);
         return tempListMutualFilms;
     }
+
+    @GetMapping("/director/{directorId}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> getTopDirectorFilms(@PathVariable(name = "directorId") Long directorId,
+                                          @RequestParam(name = "sortBy") String sortType) {
+        log.info("GET /director/{}?sortBy={}", directorId, sortType);
+        List<Film> topDirectorsFilms = filmService.getTopDirectorFilms(directorId, sortType);
+        log.info("GET /director/{}?sortBy={} возвращает значение: {}", directorId, sortType, topDirectorsFilms);
+        return topDirectorsFilms;
+    }
 }

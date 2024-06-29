@@ -170,7 +170,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "F.RELEASE_DATE, " +
                 "F.DURATION, " +
                 "F.RATING_ID, " +
-                "R.RATING_TITLE, " +
+                "R.RATING_TITLE " +
                 "COUNT(L.FILM_ID) " +
                 "FROM FILM AS F " +
                 "LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
@@ -193,7 +193,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "F.RELEASE_DATE, " +
                 "F.DURATION, " +
                 "F.RATING_ID, " +
-                "R.RATING_TITLE, " +
+                "R.RATING_TITLE " +
                 "COUNT(L.FILM_ID) " +
                 "FROM FILM AS F " +
                 "LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
@@ -217,7 +217,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "F.RELEASE_DATE, " +
                 "F.DURATION, " +
                 "F.RATING_ID, " +
-                "R.RATING_TITLE, " +
+                "R.RATING_TITLE " +
                 "COUNT(L.FILM_ID) " +
                 "FROM FILM AS F " +
                 "LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
@@ -240,7 +240,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "F.RELEASE_DATE, " +
                 "F.DURATION, " +
                 "F.RATING_ID, " +
-                "R.RATING_TITLE, " +
+                "R.RATING_TITLE " +
                 "COUNT(L.FILM_ID) " +
                 "FROM FILM AS F " +
                 "LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
