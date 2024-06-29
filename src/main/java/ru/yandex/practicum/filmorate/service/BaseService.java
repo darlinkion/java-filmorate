@@ -13,4 +13,6 @@ public interface BaseService<T extends BaseModel> {
 
     T get(int id);
 
+    void deleteById(int id);
+
 }
