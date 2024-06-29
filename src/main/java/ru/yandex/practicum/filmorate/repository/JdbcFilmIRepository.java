@@ -127,6 +127,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 JdbcFilmIRepository::createFilm);
         for (Film film : list) {
             genresForFilm(film);
+            directorForFilm(film);
         }
         return list;
     }
@@ -317,7 +318,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
         if ("likes".equals(sortType)) {
             sql += "COUNT(L.FILM_ID) DESC;";
         } else if ("year".equals(sortType)) {
-            sql += "F.RELEASE_DATE DESC;";
+            sql += "EXTRACT(YEAR FROM F.RELEASE_DATE) ASC;";
         } else {
             throw new IllegalArgumentException("Недоступный тип сортировки: " + sortType);
         }

@@ -17,7 +17,7 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse validationExceptionInController(final NotFoundException e) {
         log.error("Validation {}", e);
-        return new ErrorResponse(e.getMessage());
+        return new ErrorResponse("error");
     }
 
     @ExceptionHandler(value = EntityNotFoundException.class)
