@@ -11,6 +11,6 @@ import lombok.*;
 @NoArgsConstructor
 public class Director extends BaseModel {
     @NotBlank
-    @Size(min = 1, max=1000, message = "Name not be empty")
+    @Size(min = 1, max = 1000, message = "Name not be empty")
     private String name;
 }
