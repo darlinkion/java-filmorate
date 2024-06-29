@@ -16,10 +16,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 @Repository
@@ -78,7 +75,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
         }
 
         log.info("Фильм с идентификатором {} добавлен.", filmId);
-        return film;
+        return get(filmId);
     }
 
     @Override
@@ -102,6 +99,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
             }
         }
 
+        jdbc.update("DELETE FROM FILM_DIRECTORS WHERE FILM_ID=?;", id);
         Set<Director> directors = film.getDirectors();
         if (directors != null) {
             for (Director director : directors) {
@@ -200,6 +198,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
 
         for (Film film : list) {
             genresForFilm(film);
+            directorForFilm(film);
         }
         return list;
     }
@@ -224,6 +223,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 " LIMIT ?;", JdbcFilmIRepository::createFilm, genreId, countFilm);
         for (Film film : list) {
             genresForFilm(film);
+            directorForFilm(film);
         }
         return list;
     }
@@ -247,6 +247,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "LIMIT ?;", JdbcFilmIRepository::createFilm, year, countFilm);
         for (Film film : list) {
             genresForFilm(film);
+            directorForFilm(film);
         }
         return list;
     }
@@ -271,6 +272,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "LIMIT ?;", JdbcFilmIRepository::createFilm, genreId, year, countFilm);
         for (Film film : list) {
             genresForFilm(film);
+            directorForFilm(film);
         }
         return list;
     }
@@ -294,6 +296,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
 
         for (Film film : list) {
             genresForFilm(film);
+            directorForFilm(film);
         }
         return list;
     }

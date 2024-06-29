@@ -26,6 +26,7 @@ public class FilmService implements BaseService<Film> {
     private final JdbcMpaRepository jdbcMpaRepository;
     private final JdbcUserRepository jdbcUserRepository;
     private final JdbcEventRepository jdbcEventRepository;
+    private final JdbcDirectorRepository jdbcDirectorRepository;
 
     @Override
     public Film create(Film film) {
@@ -109,6 +110,7 @@ public class FilmService implements BaseService<Film> {
     }
 
     public List<Film> getAllDirectorsFilms(int directorId, String sortType) {
+        jdbcDirectorRepository.get(directorId);
         List<Film> films = jdbcFilmIRepository.getAllDirectorsFilms(directorId, sortType);
         return films;
     }
