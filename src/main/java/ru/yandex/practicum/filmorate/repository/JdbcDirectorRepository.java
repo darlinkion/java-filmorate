@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -21,11 +20,13 @@ import java.util.List;
 public class JdbcDirectorRepository {
     private final JdbcTemplate jdbc;
 
+    public static Director createDirector(ResultSet resultSet, int row) throws SQLException {
         Director director = new Director();
         director.setId(resultSet.getInt("DIRECTOR_ID"));
         director.setName(resultSet.getString("DIRECTOR_NAME"));
         return director;
     }
+
 
     public Director create(Director director) {
         String sqlQuery = "INSERT INTO DIRECTORS (DIRECTOR_NAME) VALUES(?)";
@@ -36,6 +37,7 @@ public class JdbcDirectorRepository {
             preparedStatement.setString(1, director.getName());
             return preparedStatement;
         }, keyHolder);
+
         Integer directorId = keyHolder.getKeyAs(Integer.class);
         director.setId(directorId);
         if (directorId == null) {
@@ -50,8 +52,11 @@ public class JdbcDirectorRepository {
     }
 
     public Director get(int id) {
+        List<Director> directorsList = jdbc.query("SELECT DIRECTOR_ID, DIRECTOR_NAME FROM DIRECTORS WHERE DIRECTOR_ID=?",
                 JdbcDirectorRepository::createDirector, id);
         if (directorsList.size() != 1) {
+            log.info("Режисер с идентификатором {} не найден.", id);
+            throw new NotFoundException("Нет режисера по такому id: " + id);
         }
         Director director = directorsList.getFirst();
         log.info("Найден режисер: {}", director);
@@ -60,11 +65,12 @@ public class JdbcDirectorRepository {
 
     public Director update(Director director) {
         int id = director.getId();
-        jdbc.update("UPDATE DIRECTORS SET  DIRECTOR_NAME=? WHERE DIRECTOR_ID=?;",
+        jdbc.update("UPDATE DIRECTORS SET DIRECTOR_NAME=? WHERE DIRECTOR_ID=?;",
+                director.getName(), id);
         return director;
     }
 
-    public void deletDirector(int directorId) {
+    public void deleteDirector(int directorId) {
         jdbc.update("DELETE FROM DIRECTORS WHERE DIRECTOR_ID=?", directorId);
     }
 }
