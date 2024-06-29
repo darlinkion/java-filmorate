@@ -107,4 +107,9 @@ public class FilmService implements BaseService<Film> {
             }
         }
     }
+
+    public List<Film> getAllDirectorsFilms(int directorId, String sortType) {
+        List<Film> films = jdbcFilmIRepository.getAllDirectorsFilms(directorId, sortType);
+        return films;
+    }
 }

@@ -40,4 +40,11 @@ public class ErrorHandler {
         log.error("Error\n", e);
         return new ErrorResponse("Необработанная ошибка, ");
     }
+
+    @ExceptionHandler(value = IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleIllegalArgumentException(final IllegalArgumentException e) {
+        log.error("Error\n", e);
+        return new ErrorResponse("Неверный тип для сортировки фильмов, ");
+    }
 }

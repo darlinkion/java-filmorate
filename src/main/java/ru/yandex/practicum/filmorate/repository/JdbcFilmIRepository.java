@@ -7,6 +7,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -36,6 +37,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
         film.setMpa(new Mpa());
         film.getMpa().setId(resultSet.getInt("RATING_ID"));
         film.getMpa().setName(resultSet.getString("RATING_TITLE"));
+        film.setDirector(new Director());
         return film;
     }
 
@@ -75,7 +77,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
     @Override
     public Film update(Film film) {
         int id = film.getId();
-        jdbc.update("UPDATE FILM SET  NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION=?, RATING_ID=? " +
+        jdbc.update("UPDATE FILM SET  NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION=?, RATING_ID=?" +
                         "WHERE FILM_ID=?;",
                 film.getName(),
                 film.getDescription(),
@@ -104,7 +106,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                         " F.RELEASE_DATE," +
                         " F.DURATION," +
                         " F.RATING_ID," +
-                        " R.RATING_TITLE " +
+                        " R.RATING_TITLE," +
                         "FROM FILM AS F " +
                         "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID;",
                 JdbcFilmIRepository::createFilm);
@@ -278,4 +280,25 @@ public class JdbcFilmIRepository implements IRepository<Film> {
         }
         return list;
     }
+
+    public List<Film> getAllDirectorsFilms(int directorId, String sortType) {
+        /*String sql = "SELECT F.FILM_ID, F.NAME, F.DESCRIPTION, F.RELEASE_DATE, F.DURATION, F.RATING_ID, F.DIRECTOR_ID " +
+                "FROM FILM AS F LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
+                "WHERE F.DIRECTOR_ID = ? " +
+                "GROUP BY F.FILM_ID, F.NAME, F.DESCRIPTION, F.RELEASE_DATE, F.DURATION, F.RATING_ID, F.DIRECTOR_ID " +
+                "ORDER BY ";
+
+        if ("likes".equals(sortType)) {
+            sql += "COUNT(L.FILM_ID) DESC";
+        } else if ("year".equals(sortType)) {
+            sql += "F.RELEASE_DATE DESC";
+        } else {
+            throw new IllegalArgumentException("Недоступный тип сортировки" + sortType);
+        }
+        List<Film> films=jdbc.query(sql, new Object[]{directorId}, JdbcFilmIRepository::createFilm);
+
+
+        return films;*/ return  null;
+    }
+
 }

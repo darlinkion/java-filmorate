@@ -82,9 +82,21 @@ public class FilmController {
     }
 
     @GetMapping("/common")
-    public List<Film> getMutualFilms(@RequestParam @Positive int userId, @RequestParam @Positive int friendId) {
+    public List<Film> getMutualFilms(@RequestParam @Positive int userId,
+                                     @RequestParam @Positive int friendId) {
         List<Film> tempListMutualFilms = filmService.getMutualFilms(userId, friendId);
         log.info("Friend films mutual from DataBase ==>" + tempListMutualFilms);
         return tempListMutualFilms;
     }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getAllDirectorFilms(
+            @PathVariable @Positive int directorId,
+            @RequestParam(required = false, defaultValue = "likes") String sortBy) {
+
+        List<Film> films = filmService.getAllDirectorsFilms(directorId, sortBy);
+        log.info("Most popular films ==> " + films);
+        return films;
+    }
+
 }
