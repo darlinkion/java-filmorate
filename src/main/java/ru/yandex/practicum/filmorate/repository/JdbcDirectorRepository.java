@@ -21,7 +21,6 @@ import java.util.List;
 public class JdbcDirectorRepository {
     private final JdbcTemplate jdbc;
 
-    private static Director createDirector(ResultSet resultSet, int row) throws SQLException {
         Director director = new Director();
         director.setId(resultSet.getInt("DIRECTOR_ID"));
         director.setName(resultSet.getString("DIRECTOR_NAME"));
@@ -51,10 +50,8 @@ public class JdbcDirectorRepository {
     }
 
     public Director get(int id) {
-        List<Director> directorsList = jdbc.query("SELECT * FROM DIRECTORS WHERE DIRECTOR_ID=?",
                 JdbcDirectorRepository::createDirector, id);
         if (directorsList.size() != 1) {
-            throw new EntityNotFoundException("Нет режисера по такому id: " + id);
         }
         Director director = directorsList.getFirst();
         log.info("Найден режисер: {}", director);
@@ -64,7 +61,6 @@ public class JdbcDirectorRepository {
     public Director update(Director director) {
         int id = director.getId();
         jdbc.update("UPDATE DIRECTORS SET  DIRECTOR_NAME=? WHERE DIRECTOR_ID=?;",
-                director.getName());
         return director;
     }
 

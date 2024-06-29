@@ -25,11 +25,6 @@ public class DirectorService {
     }
 
     public Director get(int id) {
-        Optional<Director> tempDirector = Optional.ofNullable(jdbcDirectorRepository.get(id));
-        if (tempDirector.isEmpty()) {
-            throw new NotFoundException("Нет такого режисера по id " + id);
-        }
-        return tempDirector.get();
     }
 
     public Director create(Director director) {
