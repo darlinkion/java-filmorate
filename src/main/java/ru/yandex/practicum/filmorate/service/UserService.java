@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.type.EventType;
 import ru.yandex.practicum.filmorate.model.type.OperationType;
 import ru.yandex.practicum.filmorate.repository.JdbcEventRepository;
+import ru.yandex.practicum.filmorate.repository.JdbcFilmRepository;
 import ru.yandex.practicum.filmorate.repository.JdbcUserRepository;
 
 import java.time.Instant;
@@ -20,6 +21,7 @@ import java.util.Optional;
 public class UserService implements BaseService<User> {
     private final JdbcUserRepository jdbcUserRepository;
     private final JdbcEventRepository jdbcEventRepository;
+    private final JdbcFilmRepository jdbcFilmRepository;
 
     @Override
     public User create(User user) {
@@ -81,7 +83,7 @@ public class UserService implements BaseService<User> {
     }
 
     public List<Film> getRecommendationFilms(long userId) {
-        return jdbcUserRepository.getRecommendationFilms(userId);
+        return jdbcFilmRepository.getRecommendationFilms(userId);
     }
 
     public List<Event> getUserEvents(int id) {

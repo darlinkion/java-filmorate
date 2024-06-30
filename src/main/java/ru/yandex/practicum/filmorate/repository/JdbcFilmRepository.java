@@ -16,13 +16,16 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 
 @Repository
 @RequiredArgsConstructor
 @Slf4j
-public class JdbcFilmIRepository implements IRepository<Film> {
+public class JdbcFilmRepository implements IRepository<Film> {
     private final JdbcTemplate jdbc;
 
     private static Film createFilm(ResultSet resultSet, int row) throws SQLException {
@@ -122,7 +125,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                         " R.RATING_TITLE " +
                         "FROM FILM AS F " +
                         "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID;",
-                JdbcFilmIRepository::createFilm);
+                JdbcFilmRepository::createFilm);
         for (Film film : list) {
             genresForFilm(film);
             directorForFilm(film);
@@ -142,7 +145,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "FROM FILM AS F " +
                 "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID " +
                 "WHERE F.FILM_ID = ?;";
-        List<Film> films = jdbc.query(sqlQuery, JdbcFilmIRepository::createFilm, id);
+        List<Film> films = jdbc.query(sqlQuery, JdbcFilmRepository::createFilm, id);
         if (films.size() != 1) {
             log.info("Фильм с идентификатором {} не найден.", id);
             throw new NotFoundException("Фильм с идентификатором id = " + id + " не найден.");
@@ -194,7 +197,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID " +
                 "GROUP BY F.FILM_ID " +
                 "ORDER BY COUNT(L.FILM_ID) DESC " +
-                "LIMIT ?;", JdbcFilmIRepository::createFilm, countFilm);
+                "LIMIT ?;", JdbcFilmRepository::createFilm, countFilm);
 
         for (Film film : list) {
             genresForFilm(film);
@@ -220,7 +223,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "WHERE FG.GENRE_ID=? " +
                 "GROUP BY F.FILM_ID " +
                 "ORDER BY COUNT(L.FILM_ID) DESC " +
-                " LIMIT ?;", JdbcFilmIRepository::createFilm, genreId, countFilm);
+                " LIMIT ?;", JdbcFilmRepository::createFilm, genreId, countFilm);
         for (Film film : list) {
             genresForFilm(film);
             directorForFilm(film);
@@ -244,7 +247,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "WHERE EXTRACT(YEAR FROM F.RELEASE_DATE)=?" +
                 "GROUP BY F.FILM_ID " +
                 "ORDER BY COUNT(L.FILM_ID) DESC " +
-                "LIMIT ?;", JdbcFilmIRepository::createFilm, year, countFilm);
+                "LIMIT ?;", JdbcFilmRepository::createFilm, year, countFilm);
         for (Film film : list) {
             genresForFilm(film);
             directorForFilm(film);
@@ -269,7 +272,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "WHERE FG.GENRE_ID=? AND EXTRACT(YEAR FROM F.RELEASE_DATE)=?" +
                 "GROUP BY F.FILM_ID " +
                 "ORDER BY COUNT(L.FILM_ID) DESC " +
-                "LIMIT ?;", JdbcFilmIRepository::createFilm, genreId, year, countFilm);
+                "LIMIT ?;", JdbcFilmRepository::createFilm, genreId, year, countFilm);
         for (Film film : list) {
             genresForFilm(film);
             directorForFilm(film);
@@ -292,7 +295,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "WHERE L1.USER_ID = ? AND L2.USER_ID = ? " +
                 "ORDER BY F.FILM_ID;";
 
-        List<Film> list = jdbc.query(sql, JdbcFilmIRepository::createFilm, userID, friendId);
+        List<Film> list = jdbc.query(sql, JdbcFilmRepository::createFilm, userID, friendId);
 
         for (Film film : list) {
             genresForFilm(film);
@@ -326,8 +329,34 @@ public class JdbcFilmIRepository implements IRepository<Film> {
             throw new IllegalArgumentException("Недоступный тип сортировки: " + sortType);
         }
 
-        List<Film> films = jdbc.query(sql, JdbcFilmIRepository::createFilm, directorId);
+        List<Film> films = jdbc.query(sql, JdbcFilmRepository::createFilm, directorId);
 
+        for (Film film : films) {
+            genresForFilm(film);
+            directorForFilm(film);
+        }
+        return films;
+    }
+
+    public List<Film> getRecommendationFilms(long userId) {
+        String sql = "SELECT * FROM FILM AS f " +
+                "JOIN RATING AS r ON f.RATING_ID = r.RATING_ID " +
+                "WHERE f.FILM_ID IN ( " +
+                "SELECT FILM_ID FROM LIKES " +
+                "WHERE USER_ID IN ( " +
+                "SELECT l1.USER_ID FROM LIKES AS l1 " +
+                "RIGHT JOIN LIKES AS l2 ON l2.FILM_ID = l1.FILM_ID " +
+                "GROUP BY l1.USER_ID, l2.USER_ID " +
+                "HAVING l1.USER_ID IS NOT NULL " +
+                "AND l1.USER_ID != ? AND l2.USER_ID = ? " +
+                "ORDER BY COUNT(l1.USER_ID) DESC " +
+                ") " +
+                "AND f.FILM_ID NOT IN (  " +
+                "SELECT FILM_ID FROM LIKES " +
+                "WHERE USER_ID = ? " +
+                ") " +
+                ");";
+        List<Film> films = jdbc.query(sql, JdbcFilmRepository::createFilm, userId, userId, userId);
         for (Film film : films) {
             genresForFilm(film);
             directorForFilm(film);

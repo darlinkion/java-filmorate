@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.type.EventType;
 import ru.yandex.practicum.filmorate.model.type.OperationType;
 import ru.yandex.practicum.filmorate.repository.JdbcEventRepository;
-import ru.yandex.practicum.filmorate.repository.JdbcFilmIRepository;
+import ru.yandex.practicum.filmorate.repository.JdbcFilmRepository;
 import ru.yandex.practicum.filmorate.repository.JdbcReviewRepository;
 import ru.yandex.practicum.filmorate.repository.JdbcUserRepository;
 
@@ -19,12 +19,12 @@ import java.util.List;
 public class ReviewService {
     private final JdbcReviewRepository jdbcReviewRepository;
     private final JdbcUserRepository jdbcUserRepository;
-    private final JdbcFilmIRepository jdbcFilmIRepository;
+    private final JdbcFilmRepository jdbcFilmRepository;
     private final JdbcEventRepository jdbcEventRepository;
 
     public Review create(Review temp) {
         jdbcUserRepository.get(temp.getUserId());
-        jdbcFilmIRepository.get(temp.getFilmId());
+        jdbcFilmRepository.get(temp.getFilmId());
         Review newReview = jdbcReviewRepository.createReview(temp);
         jdbcEventRepository.addEvent(new Event(Instant.now().toEpochMilli(), newReview.getUserId(),
                 EventType.REVIEW, OperationType.ADD, newReview.getReviewId()));

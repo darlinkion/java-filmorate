@@ -9,7 +9,13 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.type.EventType;
 import ru.yandex.practicum.filmorate.model.type.OperationType;
-import ru.yandex.practicum.filmorate.repository.*;
+import ru.yandex.practicum.filmorate.repository.JdbcDirectorRepository;
+import ru.yandex.practicum.filmorate.repository.JdbcEventRepository;
+import ru.yandex.practicum.filmorate.repository.JdbcFilmRepository;
+import ru.yandex.practicum.filmorate.repository.JdbcGenreRepository;
+import ru.yandex.practicum.filmorate.repository.JdbcLikesRepository;
+import ru.yandex.practicum.filmorate.repository.JdbcMpaRepository;
+import ru.yandex.practicum.filmorate.repository.JdbcUserRepository;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -21,7 +27,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class FilmService implements BaseService<Film> {
     private final JdbcLikesRepository likesRepository;
-    private final JdbcFilmIRepository jdbcFilmIRepository;
+    private final JdbcFilmRepository jdbcFilmRepository;
     private final JdbcGenreRepository jdbcGenreRepository;
     private final JdbcMpaRepository jdbcMpaRepository;
     private final JdbcUserRepository jdbcUserRepository;
@@ -31,24 +37,24 @@ public class FilmService implements BaseService<Film> {
     @Override
     public Film create(Film film) {
         checkRatingAndGenres(film);
-        return jdbcFilmIRepository.create(film);
+        return jdbcFilmRepository.create(film);
     }
 
     @Override
     public Film update(Film film) {
         checkRatingAndGenres(film);
         get(film.getId());
-        return jdbcFilmIRepository.update(film);
+        return jdbcFilmRepository.update(film);
     }
 
     @Override
     public List<Film> getAll() {
-        return jdbcFilmIRepository.getAll();
+        return jdbcFilmRepository.getAll();
     }
 
     @Override
     public Film get(int id) {
-        Optional<Film> tempFilm = Optional.ofNullable(jdbcFilmIRepository.get(id));
+        Optional<Film> tempFilm = Optional.ofNullable(jdbcFilmRepository.get(id));
         if (tempFilm.isEmpty()) {
             throw new NotFoundException("Нет такого фильма по id " + id);
         }
@@ -59,7 +65,7 @@ public class FilmService implements BaseService<Film> {
         if (get(id) == null) {
             throw new NotFoundException("Нет такого фильма по id " + id);
         }
-        jdbcFilmIRepository.deleteById(id);
+        jdbcFilmRepository.deleteById(id);
     }
 
     public void setLike(int filmId, int userId) {
@@ -71,6 +77,8 @@ public class FilmService implements BaseService<Film> {
     }
 
     public void deleteLike(int filmId, int userId) {
+        get(filmId);
+        jdbcUserRepository.get(userId);
         likesRepository.deleteLike(filmId, userId);
         jdbcEventRepository.addEvent(new Event(Instant.now().toEpochMilli(), userId, EventType.LIKE,
                 OperationType.REMOVE, filmId));
@@ -79,14 +87,14 @@ public class FilmService implements BaseService<Film> {
     public List<Film> getPopularFilms(int countFilm, Integer genreId, Integer year) {
         List<Film> films = new ArrayList<>();
         if (genreId == null && year == null)
-            return jdbcFilmIRepository.getPopularFilms(countFilm);
+            return jdbcFilmRepository.getPopularFilms(countFilm);
         if (year == null)
-            return jdbcFilmIRepository.getPopularFilmsWithGenre(countFilm, genreId);
+            return jdbcFilmRepository.getPopularFilmsWithGenre(countFilm, genreId);
 
         if (genreId == null) {
-            return jdbcFilmIRepository.getPopularFilmsWithYear(countFilm, year);
+            return jdbcFilmRepository.getPopularFilmsWithYear(countFilm, year);
         } else {
-            films = jdbcFilmIRepository.getPopularFilmsWithYearAndGenre(countFilm, genreId, year);
+            films = jdbcFilmRepository.getPopularFilmsWithYearAndGenre(countFilm, genreId, year);
         }
         return films;
     }
@@ -94,7 +102,7 @@ public class FilmService implements BaseService<Film> {
     public List<Film> getMutualFilms(int userId, int friendId) {
         jdbcUserRepository.get(userId);
         jdbcUserRepository.get(friendId);
-        return jdbcFilmIRepository.getMutualFilms(userId, friendId);
+        return jdbcFilmRepository.getMutualFilms(userId, friendId);
     }
 
     private void checkRatingAndGenres(Film film) {
@@ -111,7 +119,7 @@ public class FilmService implements BaseService<Film> {
 
     public List<Film> getAllDirectorsFilms(int directorId, String sortType) {
         jdbcDirectorRepository.get(directorId);
-        List<Film> films = jdbcFilmIRepository.getAllDirectorsFilms(directorId, sortType);
+        List<Film> films = jdbcFilmRepository.getAllDirectorsFilms(directorId, sortType);
         return films;
     }
 }
