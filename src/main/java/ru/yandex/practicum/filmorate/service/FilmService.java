@@ -127,6 +127,7 @@ public class FilmService implements BaseService<Film> {
 
         StringBuilder queryBuilder = new StringBuilder("%");
         queryBuilder.append(query.toLowerCase()).append("%");
+
         if ("director".equals(by)) {
              return jdbcFilmRepository.searchFilmsByDirector(queryBuilder.toString());
         }
