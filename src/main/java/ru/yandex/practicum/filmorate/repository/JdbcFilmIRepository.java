@@ -7,6 +7,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -15,9 +16,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 @Repository
@@ -68,14 +67,21 @@ public class JdbcFilmIRepository implements IRepository<Film> {
             }
         }
 
+        if (film.getDirectors() != null) {
+            for (Director director : film.getDirectors()) {
+                String directoeSql = "INSERT INTO FILM_DIRECTORS (FILM_ID, DIRECTOR_ID) VALUES(?, ?)";
+                jdbc.update(directoeSql, filmId, director.getId());
+            }
+        }
+
         log.info("Фильм с идентификатором {} добавлен.", filmId);
-        return film;
+        return get(filmId);
     }
 
     @Override
     public Film update(Film film) {
         int id = film.getId();
-        jdbc.update("UPDATE FILM SET  NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION=?, RATING_ID=? " +
+        jdbc.update("UPDATE FILM SET NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION=?, RATING_ID=? " +
                         "WHERE FILM_ID=?;",
                 film.getName(),
                 film.getDescription(),
@@ -90,6 +96,15 @@ public class JdbcFilmIRepository implements IRepository<Film> {
         if (genres != null) {
             for (Genre genre : genres) {
                 jdbc.update("INSERT INTO FILM_GENRE (FILM_ID, GENRE_ID) VALUES(?, ?)", id, genre.getId());
+            }
+        }
+
+        jdbc.update("DELETE FROM FILM_DIRECTORS WHERE FILM_ID=?;", id);
+        Set<Director> directors = film.getDirectors();
+        if (directors != null) {
+            for (Director director : directors) {
+                jdbc.update("INSERT INTO FILM_DIRECTORS (FILM_ID, DIRECTOR_ID) VALUES(?, ?)", film.getId(),
+                        director.getId());
             }
         }
 
@@ -110,6 +125,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 JdbcFilmIRepository::createFilm);
         for (Film film : list) {
             genresForFilm(film);
+            directorForFilm(film);
         }
         return list;
     }
@@ -133,6 +149,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
         }
         log.info("Найден фильм: {} {}", id, films.getFirst().getName());
         genresForFilm(films.getFirst());
+        directorForFilm(films.getFirst());
         return films.getFirst();
     }
 
@@ -181,6 +198,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
 
         for (Film film : list) {
             genresForFilm(film);
+            directorForFilm(film);
         }
         return list;
     }
@@ -205,6 +223,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 " LIMIT ?;", JdbcFilmIRepository::createFilm, genreId, countFilm);
         for (Film film : list) {
             genresForFilm(film);
+            directorForFilm(film);
         }
         return list;
     }
@@ -228,6 +247,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "LIMIT ?;", JdbcFilmIRepository::createFilm, year, countFilm);
         for (Film film : list) {
             genresForFilm(film);
+            directorForFilm(film);
         }
         return list;
     }
@@ -252,6 +272,7 @@ public class JdbcFilmIRepository implements IRepository<Film> {
                 "LIMIT ?;", JdbcFilmIRepository::createFilm, genreId, year, countFilm);
         for (Film film : list) {
             genresForFilm(film);
+            directorForFilm(film);
         }
         return list;
     }
@@ -275,7 +296,59 @@ public class JdbcFilmIRepository implements IRepository<Film> {
 
         for (Film film : list) {
             genresForFilm(film);
+            directorForFilm(film);
         }
         return list;
+    }
+
+    public List<Film> getAllDirectorsFilms(int directorId, String sortType) {
+
+        String sql = "SELECT F.FILM_ID, " +
+                "F.NAME, " +
+                "F.DESCRIPTION, " +
+                "F.RELEASE_DATE, " +
+                "F.DURATION, " +
+                "F.RATING_ID, " +
+                "R.RATING_TITLE " +
+                "FROM FILM AS F " +
+                "INNER JOIN FILM_DIRECTORS AS FD ON F.FILM_ID = FD.FILM_ID " +
+                "LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
+                "LEFT JOIN RATING AS R ON F.RATING_ID = R.RATING_ID " +
+                "WHERE FD.DIRECTOR_ID = ? " +
+                "GROUP BY F.FILM_ID, F.NAME, F.DESCRIPTION, F.RELEASE_DATE, F.DURATION, F.RATING_ID " +
+                "ORDER BY ";
+
+        if ("likes".equals(sortType)) {
+            sql += "COUNT(L.FILM_ID) DESC;";
+        } else if ("year".equals(sortType)) {
+            sql += "EXTRACT(YEAR FROM F.RELEASE_DATE) ASC;";
+        } else {
+            throw new IllegalArgumentException("Недоступный тип сортировки: " + sortType);
+        }
+
+        List<Film> films = jdbc.query(sql, JdbcFilmIRepository::createFilm, directorId);
+
+        for (Film film : films) {
+            genresForFilm(film);
+            directorForFilm(film);
+        }
+        return films;
+    }
+
+    private Film directorForFilm(Film film) {
+        String sqlQuery = "SELECT D.DIRECTOR_ID, " +
+                "D.DIRECTOR_NAME " +
+                "FROM FILM_DIRECTORS AS FD " +
+                "INNER JOIN DIRECTORS AS D ON FD.DIRECTOR_ID = D.DIRECTOR_ID " +
+                "WHERE FD.FILM_ID = ?;";
+        List<Director> directors = jdbc.query(sqlQuery,
+                JdbcDirectorRepository::createDirector, film.getId());
+        if (!directors.isEmpty()) {
+            Set<Director> directorSet = new HashSet<>(directors);
+            film.setDirectors(directorSet);
+        } else {
+            film.setDirectors(new HashSet<Director>());
+        }
+        return film;
     }
 }

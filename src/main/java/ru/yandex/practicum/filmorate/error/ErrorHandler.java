@@ -17,7 +17,7 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse validationExceptionInController(final NotFoundException e) {
         log.error("Validation {}", e);
-        return new ErrorResponse(e.getMessage());
+        return new ErrorResponse("error");
     }
 
     @ExceptionHandler(value = EntityNotFoundException.class)
@@ -39,5 +39,12 @@ public class ErrorHandler {
     public ErrorResponse handleException(final HandlerMethodValidationException e) {
         log.error("Error\n", e);
         return new ErrorResponse("Необработанная ошибка, ");
+    }
+
+    @ExceptionHandler(value = IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleIllegalArgumentException(final IllegalArgumentException e) {
+        log.error("Error\n", e);
+        return new ErrorResponse("Неверный тип для сортировки фильмов, ");
     }
 }
