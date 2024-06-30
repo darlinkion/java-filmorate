@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -96,5 +97,14 @@ public class FilmController {
         List<Film> films = filmService.getAllDirectorsFilms(directorId, sortBy);
         log.info("Most popular films ==> " + films);
         return films;
+    }
+
+    @GetMapping("/search")
+    public List<Film> searchFilms(
+            @NotNull @RequestParam String query,
+            @NotNull @RequestParam String by) {
+        List<Film> searchFilms = filmService.searchFilms(query, by);
+        log.info("Search films ==> " + searchFilms);
+        return searchFilms;
     }
 }
