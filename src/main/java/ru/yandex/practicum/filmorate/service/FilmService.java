@@ -122,4 +122,21 @@ public class FilmService implements BaseService<Film> {
         List<Film> films = jdbcFilmRepository.getAllDirectorsFilms(directorId, sortType);
         return films;
     }
+
+    public List<Film> searchFilms(String query, String by) {
+
+        StringBuilder queryBuilder = new StringBuilder("%");
+        queryBuilder.append(query.toLowerCase()).append("%");
+
+        if ("director".equals(by)) {
+             return jdbcFilmRepository.searchFilmsByDirector(queryBuilder.toString());
+        }
+        if ("title".equals(by)) {
+            return jdbcFilmRepository.searchFilmsByTitle(queryBuilder.toString());
+        }
+        if ("director,title".equals(by) || "title,director".equals(by)) {
+            return jdbcFilmRepository.searchFilmsByTitleAndDirector(queryBuilder.toString());
+        }
+        throw new IllegalArgumentException("Неверное значение для by: " + by);
+    }
 }

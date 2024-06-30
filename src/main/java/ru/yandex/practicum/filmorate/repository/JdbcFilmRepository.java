@@ -38,6 +38,7 @@ public class JdbcFilmRepository implements IRepository<Film> {
         film.setMpa(new Mpa());
         film.getMpa().setId(resultSet.getInt("RATING_ID"));
         film.getMpa().setName(resultSet.getString("RATING_TITLE"));
+        //film.setGenres(new Genre());
         return film;
     }
 
@@ -362,6 +363,71 @@ public class JdbcFilmRepository implements IRepository<Film> {
             directorForFilm(film);
         }
         return films;
+    }
+
+    public List<Film> searchFilmsByTitle(String query) {
+        String sql = "SELECT F.FILM_ID, F.NAME, F.DESCRIPTION, F.RELEASE_DATE, " +
+                "F.DURATION, F.RATING_ID, R.RATING_TITLE, COUNT(L.FILM_ID) " +
+                "FROM FILM AS F " +
+                "LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
+                "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID " +
+                "LEFT JOIN FILM_DIRECTORS AS FD ON F.FILM_ID = FD.FILM_ID " +
+                "LEFT JOIN DIRECTORS AS D ON FD.DIRECTOR_ID = D.DIRECTOR_ID " +
+                "WHERE LOWER(F.NAME) LIKE ? " +
+                "GROUP BY F.FILM_ID " +
+                "ORDER BY COUNT(L.FILM_ID) DESC";
+
+
+        List<Film> searchFilms = jdbc.query(sql, JdbcFilmRepository::createFilm, query);
+
+        for (Film film : searchFilms) {
+            genresForFilm(film);
+            directorForFilm(film);
+        }
+        return searchFilms;
+    }
+
+    public List<Film> searchFilmsByDirector(String query) {
+        String sql = "SELECT F.FILM_ID, F.NAME, F.DESCRIPTION, F.RELEASE_DATE, " +
+                "F.DURATION, F.RATING_ID, R.RATING_TITLE, COUNT(L.FILM_ID) " +
+                "FROM FILM AS F " +
+                "LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
+                "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID " +
+                "LEFT JOIN FILM_DIRECTORS AS FD ON F.FILM_ID = FD.FILM_ID " +
+                "LEFT JOIN DIRECTORS AS D ON FD.DIRECTOR_ID = D.DIRECTOR_ID " +
+                "WHERE LOWER(D.DIRECTOR_NAME) LIKE ? " +
+                "GROUP BY F.FILM_ID " +
+                "ORDER BY COUNT(L.FILM_ID) DESC";
+
+
+        List<Film> searchFilms = jdbc.query(sql, JdbcFilmRepository::createFilm, query);
+
+        for (Film film : searchFilms) {
+            genresForFilm(film);
+            directorForFilm(film);
+        }
+        return searchFilms;
+    }
+
+    public List<Film> searchFilmsByTitleAndDirector(String query) {
+        String sql = "SELECT F.FILM_ID, F.NAME, F.DESCRIPTION, F.RELEASE_DATE, " +
+                "F.DURATION, F.RATING_ID, R.RATING_TITLE, COUNT(L.FILM_ID) " +
+                "FROM FILM AS F " +
+                "LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
+                "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID " +
+                "LEFT JOIN FILM_DIRECTORS AS FD ON F.FILM_ID = FD.FILM_ID " +
+                "LEFT JOIN DIRECTORS AS D ON FD.DIRECTOR_ID = D.DIRECTOR_ID " +
+                "WHERE LOWER(F.NAME) LIKE ? OR LOWER(D.DIRECTOR_NAME) LIKE ?" +
+                "GROUP BY F.FILM_ID " +
+                "ORDER BY COUNT(L.FILM_ID) DESC";
+
+        List<Film> searchFilms = jdbc.query(sql, JdbcFilmRepository::createFilm, query, query);
+
+        for (Film film : searchFilms) {
+            genresForFilm(film);
+            directorForFilm(film);
+        }
+        return searchFilms;
     }
 
     private Film directorForFilm(Film film) {
