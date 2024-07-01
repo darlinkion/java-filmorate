@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.repository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -162,9 +163,9 @@ public class JdbcFilmRepository implements IRepository<Film> {
         try {
             String sql = "delete from film where film_id = ?";
             jdbc.update(sql, id);
-        } catch (Exception e) {
+        } catch (EmptyResultDataAccessException e) {
             log.error("Ошибка в удалении фильма по идентификатору из БД: {}", e.getMessage(), e);
-            throw new NotFoundException("Ошибка в удалении фильма по идентификатору из БД:");
+            throw new NotFoundException("Нет такого фильма по id = " + id);
         }
     }
 
