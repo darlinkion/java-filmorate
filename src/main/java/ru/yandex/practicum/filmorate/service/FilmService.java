@@ -9,13 +9,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.type.EventType;
 import ru.yandex.practicum.filmorate.model.type.OperationType;
-import ru.yandex.practicum.filmorate.repository.JdbcDirectorRepository;
-import ru.yandex.practicum.filmorate.repository.JdbcEventRepository;
-import ru.yandex.practicum.filmorate.repository.JdbcFilmRepository;
-import ru.yandex.practicum.filmorate.repository.JdbcGenreRepository;
-import ru.yandex.practicum.filmorate.repository.JdbcLikesRepository;
-import ru.yandex.practicum.filmorate.repository.JdbcMpaRepository;
-import ru.yandex.practicum.filmorate.repository.JdbcUserRepository;
+import ru.yandex.practicum.filmorate.repository.*;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -62,6 +56,7 @@ public class FilmService implements BaseService<Film> {
     }
 
     public void deleteById(int id) {
+        get(id);
         jdbcFilmRepository.deleteById(id);
     }
 
@@ -126,7 +121,7 @@ public class FilmService implements BaseService<Film> {
         queryBuilder.append(query.toLowerCase()).append("%");
 
         if ("director".equals(by)) {
-             return jdbcFilmRepository.searchFilmsByDirector(queryBuilder.toString());
+            return jdbcFilmRepository.searchFilmsByDirector(queryBuilder.toString());
         }
         if ("title".equals(by)) {
             return jdbcFilmRepository.searchFilmsByTitle(queryBuilder.toString());

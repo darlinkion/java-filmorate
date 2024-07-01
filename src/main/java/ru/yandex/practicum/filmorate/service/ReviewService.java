@@ -61,13 +61,13 @@ public class ReviewService {
     public void setLike(int reviewId, int userId) {
         jdbcUserRepository.get(userId);
         get(reviewId);
-        jdbcReviewRepository.setLike(reviewId, userId);
+        jdbcReviewRepository.setUseful(reviewId, userId, 1);
     }
 
     public void setDislike(int reviewId, int userId) {
         jdbcUserRepository.get(userId);
         get(reviewId);
-        jdbcReviewRepository.setDislike(reviewId, userId);
+        jdbcReviewRepository.setUseful(reviewId, userId, -1);
     }
 
     public void removeGrade(int reviewId, int userId) {

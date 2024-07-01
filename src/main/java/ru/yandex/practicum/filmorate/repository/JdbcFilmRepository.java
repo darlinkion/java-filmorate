@@ -17,10 +17,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 @Repository
@@ -39,7 +36,6 @@ public class JdbcFilmRepository implements IRepository<Film> {
         film.setMpa(new Mpa());
         film.getMpa().setId(resultSet.getInt("RATING_ID"));
         film.getMpa().setName(resultSet.getString("RATING_TITLE"));
-        //film.setGenres(new Genre());
         return film;
     }
 
@@ -65,20 +61,8 @@ public class JdbcFilmRepository implements IRepository<Film> {
             throw new NotFoundException("Фильм не добавлен");
         }
 
-        if (film.getGenres() != null) {
-            for (Genre genre : film.getGenres()) {
-                String genreSql = "INSERT INTO FILM_GENRE (FILM_ID, GENRE_ID) VALUES(?, ?)";
-                jdbc.update(genreSql, filmId, genre.getId());
-            }
-        }
-
-        if (film.getDirectors() != null) {
-            for (Director director : film.getDirectors()) {
-                String directoeSql = "INSERT INTO FILM_DIRECTORS (FILM_ID, DIRECTOR_ID) VALUES(?, ?)";
-                jdbc.update(directoeSql, filmId, director.getId());
-            }
-        }
-
+        addGenres(film.getGenres(), filmId);
+        addDirectors(film.getDirectors(), filmId);
         log.info("Фильм с идентификатором {} добавлен.", filmId);
         return get(filmId);
     }
@@ -98,23 +82,16 @@ public class JdbcFilmRepository implements IRepository<Film> {
         jdbc.update("DELETE FROM FILM_GENRE WHERE FILM_ID=?;", id);
 
         Set<Genre> genres = film.getGenres();
-        if (genres != null) {
-            for (Genre genre : genres) {
-                jdbc.update("INSERT INTO FILM_GENRE (FILM_ID, GENRE_ID) VALUES(?, ?)", id, genre.getId());
-            }
-        }
+        addGenres(genres, id);
 
         jdbc.update("DELETE FROM FILM_DIRECTORS WHERE FILM_ID=?;", id);
+
         Set<Director> directors = film.getDirectors();
-        if (directors != null) {
-            for (Director director : directors) {
-                jdbc.update("INSERT INTO FILM_DIRECTORS (FILM_ID, DIRECTOR_ID) VALUES(?, ?)", film.getId(),
-                        director.getId());
-            }
-        }
+        addDirectors(directors, id);
 
         return get(film.getId());
     }
+
 
     @Override
     public List<Film> getAll() {
@@ -128,11 +105,8 @@ public class JdbcFilmRepository implements IRepository<Film> {
                         "FROM FILM AS F " +
                         "INNER JOIN RATING AS R ON F.RATING_ID = R.RATING_ID;",
                 JdbcFilmRepository::createFilm);
-        for (Film film : list) {
-            genresForFilm(film);
-            directorForFilm(film);
-        }
-        return list;
+
+        return filmsWithGenres(filmsWithDirectors(list));
     }
 
     @Override
@@ -169,21 +143,6 @@ public class JdbcFilmRepository implements IRepository<Film> {
         }
     }
 
-    private Film genresForFilm(Film film) {
-        String sqlQueryGenre = "SELECT G.GENRE_ID, G.GENRE_NAME " +
-                "FROM FILM_GENRE AS FG " +
-                "INNER JOIN GENRE AS G ON FG.GENRE_ID = G.GENRE_ID " +
-                "WHERE FG.FILM_ID = ?;";
-        LinkedHashSet<Genre> set = new LinkedHashSet<>(jdbc.query(sqlQueryGenre,
-                JdbcGenreRepository::createGenre, film.getId()));
-        if (!set.isEmpty()) {
-            film.setGenres(set);
-        } else {
-            film.setGenres(new LinkedHashSet<>());
-        }
-        return film;
-    }
-
     public List<Film> getPopularFilms(int countFilm) {
 
         List<Film> list = jdbc.query("SELECT F.FILM_ID, " +
@@ -201,11 +160,7 @@ public class JdbcFilmRepository implements IRepository<Film> {
                 "ORDER BY COUNT(L.FILM_ID) DESC " +
                 "LIMIT ?;", JdbcFilmRepository::createFilm, countFilm);
 
-        for (Film film : list) {
-            genresForFilm(film);
-            directorForFilm(film);
-        }
-        return list;
+        return filmsWithGenres(filmsWithDirectors(list));
     }
 
     public List<Film> getPopularFilmsWithGenre(int countFilm, int genreId) {
@@ -226,11 +181,8 @@ public class JdbcFilmRepository implements IRepository<Film> {
                 "GROUP BY F.FILM_ID " +
                 "ORDER BY COUNT(L.FILM_ID) DESC " +
                 " LIMIT ?;", JdbcFilmRepository::createFilm, genreId, countFilm);
-        for (Film film : list) {
-            genresForFilm(film);
-            directorForFilm(film);
-        }
-        return list;
+
+        return filmsWithGenres(filmsWithDirectors(list));
     }
 
     public List<Film> getPopularFilmsWithYear(int countFilm, int year) {
@@ -250,16 +202,13 @@ public class JdbcFilmRepository implements IRepository<Film> {
                 "GROUP BY F.FILM_ID " +
                 "ORDER BY COUNT(L.FILM_ID) DESC " +
                 "LIMIT ?;", JdbcFilmRepository::createFilm, year, countFilm);
-        for (Film film : list) {
-            genresForFilm(film);
-            directorForFilm(film);
-        }
-        return list;
+
+        return filmsWithGenres(filmsWithDirectors(list));
     }
 
     public List<Film> getPopularFilmsWithYearAndGenre(int countFilm, int genreId, int year) {
 
-        List<Film> list = jdbc.query("SELECT F.FILM_ID, " +
+        List<Film> films = jdbc.query("SELECT F.FILM_ID, " +
                 "F.NAME, " +
                 "F.DESCRIPTION, " +
                 "F.RELEASE_DATE, " +
@@ -275,11 +224,8 @@ public class JdbcFilmRepository implements IRepository<Film> {
                 "GROUP BY F.FILM_ID " +
                 "ORDER BY COUNT(L.FILM_ID) DESC " +
                 "LIMIT ?;", JdbcFilmRepository::createFilm, genreId, year, countFilm);
-        for (Film film : list) {
-            genresForFilm(film);
-            directorForFilm(film);
-        }
-        return list;
+
+        return filmsWithGenres(filmsWithDirectors(films));
     }
 
     public List<Film> getMutualFilms(int userID, int friendId) {
@@ -297,13 +243,9 @@ public class JdbcFilmRepository implements IRepository<Film> {
                 "WHERE L1.USER_ID = ? AND L2.USER_ID = ? " +
                 "ORDER BY F.FILM_ID;";
 
-        List<Film> list = jdbc.query(sql, JdbcFilmRepository::createFilm, userID, friendId);
+        List<Film> films = jdbc.query(sql, JdbcFilmRepository::createFilm, userID, friendId);
 
-        for (Film film : list) {
-            genresForFilm(film);
-            directorForFilm(film);
-        }
-        return list;
+        return filmsWithGenres(filmsWithDirectors(films));
     }
 
     public List<Film> getAllDirectorsFilms(int directorId, String sortType) {
@@ -333,11 +275,7 @@ public class JdbcFilmRepository implements IRepository<Film> {
 
         List<Film> films = jdbc.query(sql, JdbcFilmRepository::createFilm, directorId);
 
-        for (Film film : films) {
-            genresForFilm(film);
-            directorForFilm(film);
-        }
-        return films;
+        return filmsWithGenres(filmsWithDirectors(films));
     }
 
     public List<Film> getRecommendationFilms(long userId) {
@@ -351,19 +289,14 @@ public class JdbcFilmRepository implements IRepository<Film> {
                 "GROUP BY l1.USER_ID, l2.USER_ID " +
                 "HAVING l1.USER_ID IS NOT NULL " +
                 "AND l1.USER_ID != ? AND l2.USER_ID = ? " +
-                "ORDER BY COUNT(l1.USER_ID) DESC " +
-                ") " +
+                "ORDER BY COUNT(l1.USER_ID) DESC) " +
                 "AND f.FILM_ID NOT IN (  " +
                 "SELECT FILM_ID FROM LIKES " +
-                "WHERE USER_ID = ? " +
-                ") " +
-                ");";
+                "WHERE USER_ID = ? ))" +
+                "LIMIT 10;";
         List<Film> films = jdbc.query(sql, JdbcFilmRepository::createFilm, userId, userId, userId);
-        for (Film film : films) {
-            genresForFilm(film);
-            directorForFilm(film);
-        }
-        return films;
+
+        return filmsWithGenres(filmsWithDirectors(films));
     }
 
     public List<Film> searchFilmsByTitle(String query) {
@@ -381,11 +314,7 @@ public class JdbcFilmRepository implements IRepository<Film> {
 
         List<Film> searchFilms = jdbc.query(sql, JdbcFilmRepository::createFilm, query);
 
-        for (Film film : searchFilms) {
-            genresForFilm(film);
-            directorForFilm(film);
-        }
-        return searchFilms;
+        return filmsWithGenres(filmsWithDirectors(searchFilms));
     }
 
     public List<Film> searchFilmsByDirector(String query) {
@@ -403,11 +332,7 @@ public class JdbcFilmRepository implements IRepository<Film> {
 
         List<Film> searchFilms = jdbc.query(sql, JdbcFilmRepository::createFilm, query);
 
-        for (Film film : searchFilms) {
-            genresForFilm(film);
-            directorForFilm(film);
-        }
-        return searchFilms;
+        return filmsWithGenres(filmsWithDirectors(searchFilms));
     }
 
     public List<Film> searchFilmsByTitleAndDirector(String query) {
@@ -424,11 +349,7 @@ public class JdbcFilmRepository implements IRepository<Film> {
 
         List<Film> searchFilms = jdbc.query(sql, JdbcFilmRepository::createFilm, query, query);
 
-        for (Film film : searchFilms) {
-            genresForFilm(film);
-            directorForFilm(film);
-        }
-        return searchFilms;
+        return filmsWithGenres(filmsWithDirectors(searchFilms));
     }
 
     private Film directorForFilm(Film film) {
@@ -437,14 +358,92 @@ public class JdbcFilmRepository implements IRepository<Film> {
                 "FROM FILM_DIRECTORS AS FD " +
                 "INNER JOIN DIRECTORS AS D ON FD.DIRECTOR_ID = D.DIRECTOR_ID " +
                 "WHERE FD.FILM_ID = ?;";
-        List<Director> directors = jdbc.query(sqlQuery,
-                JdbcDirectorRepository::createDirector, film.getId());
-        if (!directors.isEmpty()) {
-            Set<Director> directorSet = new HashSet<>(directors);
-            film.setDirectors(directorSet);
-        } else {
-            film.setDirectors(new HashSet<Director>());
-        }
+
+        LinkedHashSet<Director> directors = new LinkedHashSet<>(jdbc.query(sqlQuery,
+                JdbcDirectorRepository::createDirector, film.getId()));
+
+        film.setDirectors(directors);
         return film;
+    }
+
+    private Film genresForFilm(Film film) {
+        String sqlQueryGenre = "SELECT G.GENRE_ID, G.GENRE_NAME " +
+                "FROM FILM_GENRE AS FG " +
+                "INNER JOIN GENRE AS G ON FG.GENRE_ID = G.GENRE_ID " +
+                "WHERE FG.FILM_ID = ?;";
+
+        LinkedHashSet<Genre> genres = new LinkedHashSet<>(jdbc.query(sqlQueryGenre,
+                JdbcGenreRepository::createGenre, film.getId()));
+
+        film.setGenres(genres);
+        return film;
+    }
+
+    private List<Film> filmsWithDirectors(List<Film> films) {
+        if (films.isEmpty()) {
+            return films;
+        }
+
+        String sqlQuery = "SELECT FD.FILM_ID, D.DIRECTOR_ID, D.DIRECTOR_NAME " +
+                "FROM FILM_DIRECTORS AS FD " +
+                "INNER JOIN DIRECTORS AS D ON FD.DIRECTOR_ID = D.DIRECTOR_ID;";
+
+        Map<Integer, Set<Director>> directorsByFilmId = new HashMap<>();
+
+        jdbc.query(sqlQuery, (rs) -> {
+            int filmId = rs.getInt("FILM_ID");
+            Director director = new Director();
+            director.setId(rs.getInt("DIRECTOR_ID"));
+            director.setName(rs.getString("DIRECTOR_NAME"));
+            directorsByFilmId.computeIfAbsent(filmId, k -> new HashSet<>()).add(director);
+        });
+
+        for (Film film : films) {
+            Set<Director> directors = directorsByFilmId.getOrDefault(film.getId(), new HashSet<>());
+            film.setDirectors(directors);
+        }
+        return films;
+    }
+
+    private List<Film> filmsWithGenres(List<Film> films) {
+        if (films.isEmpty()) {
+            return films;
+        }
+
+        String sqlQueryGenre = "SELECT FG.FILM_ID, G.GENRE_ID, G.GENRE_NAME " +
+                "FROM FILM_GENRE AS FG " +
+                "INNER JOIN GENRE AS G ON FG.GENRE_ID = G.GENRE_ID ;";
+        Map<Integer, Set<Genre>> genresByFilmId = new HashMap<>();
+
+        jdbc.query(sqlQueryGenre, (rs) -> {
+            int filmId = rs.getInt("FILM_ID");
+            Genre genre = new Genre();
+            genre.setId(rs.getInt("GENRE_ID"));
+            genre.setName(rs.getString("GENRE_NAME"));
+            genresByFilmId.computeIfAbsent(filmId, k -> new HashSet<>()).add(genre);
+        });
+
+        for (Film film : films) {
+            Set<Genre> genres = genresByFilmId.getOrDefault(film.getId(), new HashSet<>());
+            film.setGenres(genres);
+        }
+        return films;
+    }
+
+    private void addGenres(Set<Genre> genres, int filmId) {
+        if (genres != null) {
+            for (Genre genre : genres) {
+                jdbc.update("INSERT INTO FILM_GENRE (FILM_ID, GENRE_ID) VALUES(?, ?)", filmId, genre.getId());
+            }
+        }
+    }
+
+    private void addDirectors(Set<Director> directors, int filmId) {
+        if (directors != null) {
+            for (Director director : directors) {
+                jdbc.update("INSERT INTO FILM_DIRECTORS (FILM_ID, DIRECTOR_ID) VALUES(?, ?)", filmId,
+                        director.getId());
+            }
+        }
     }
 }
