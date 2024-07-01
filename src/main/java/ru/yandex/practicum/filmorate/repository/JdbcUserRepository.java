@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.repository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -85,9 +86,9 @@ public class JdbcUserRepository implements IRepository<User> {
         try {
             String sql = "delete from users where id = ?";
             jdbc.update(sql, id);
-        } catch (Exception e) {
+        } catch (EmptyResultDataAccessException e) {
             log.error("Ошибка при удалении пользователя из БД: {}", e.getMessage(), e);
-            throw new NotFoundException("Ошибка при удалении пользователя из БД:");
+            throw new NotFoundException("Нет такого пользователя по id = " + id);
         }
     }
 

@@ -51,9 +51,6 @@ public class UserService implements BaseService<User> {
 
     @Override
     public void deleteById(int id) {
-        if (get(id) == null) {
-            throw new NotFoundException("Нет такого пользователя по id " + id);
-        }
         jdbcUserRepository.deleteById(id);
     }
 
