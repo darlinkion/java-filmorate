@@ -89,6 +89,7 @@ public class JdbcReviewRepository {
             log.error("Отзыв с идентификатором {} не найден.", reviewId);
             throw new NotFoundException("Отзыв не найден id=" + reviewId);
         }
+
         Review review = reviews.getFirst();
         review.setUseful(calculateUseful(review));
         log.info("Найден отзыв -->" + review);
