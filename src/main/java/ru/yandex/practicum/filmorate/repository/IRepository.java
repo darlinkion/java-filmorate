@@ -13,4 +13,6 @@ public interface IRepository<T extends BaseModel> {
     List<T> getAll();
 
     T get(int id);
+
+    void deleteById(int id);
 }
