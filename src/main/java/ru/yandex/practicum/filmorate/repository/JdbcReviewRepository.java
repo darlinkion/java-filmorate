@@ -49,11 +49,11 @@ public class JdbcReviewRepository {
         }, keyHolder);
 
         Integer reviewId = keyHolder.getKeyAs(Integer.class);
-        review.setReviewId(reviewId);
 
         if (reviewId == null) {
             throw new NotFoundException("Отзыв не добавлен");
         }
+        review.setReviewId(reviewId);
         return review;
     }
 
@@ -134,15 +134,7 @@ public class JdbcReviewRepository {
     }
 
     public void setUseful(int reviewId, int userId, int like) {
-        String sqlQuery = "MERGE INTO GRADE_REVIEWS AS gr " +
-                "USING (VALUES (?, ?, ?)) AS val (USER_ID, REVIEW_ID, IS_LIKE) " +
-                "ON gr.REVIEW_ID = val.REVIEW_ID AND gr.USER_ID = val.USER_ID " +
-                "WHEN MATCHED THEN " +
-                "    UPDATE SET gr.IS_LIKE = val.IS_LIKE " +
-                "WHEN NOT MATCHED THEN " +
-                "    INSERT (USER_ID, REVIEW_ID, IS_LIKE) " +
-                "    VALUES (val.USER_ID, val.REVIEW_ID, val.IS_LIKE);";
-
+        String sqlQuery = "MERGE INTO GRADE_REVIEWS (USER_ID, REVIEW_ID, IS_LIKE) VALUES (?, ?, ?);";
         jdbc.update(sqlQuery, userId, reviewId, like);
     }
 

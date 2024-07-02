@@ -137,9 +137,9 @@ public class JdbcFilmRepository implements IRepository<Film> {
         try {
             String sql = "delete from film where film_id = ?";
             jdbc.update(sql, id);
-        } catch (EmptyResultDataAccessException e) {
+        } catch (Exception e) {
             log.error("Ошибка в удалении фильма по идентификатору из БД: {}", e.getMessage(), e);
-            throw new NotFoundException("Нет такого фильма по id = " + id);
+            throw new RuntimeException("Произошла ошибка при выполнении запроса", e);
         }
     }
 
@@ -286,14 +286,15 @@ public class JdbcFilmRepository implements IRepository<Film> {
                 "WHERE USER_ID IN ( " +
                 "SELECT l1.USER_ID FROM LIKES AS l1 " +
                 "RIGHT JOIN LIKES AS l2 ON l2.FILM_ID = l1.FILM_ID " +
-                "GROUP BY l1.USER_ID, l2.USER_ID " +
-                "HAVING l1.USER_ID IS NOT NULL " +
+                "WHERE l1.USER_ID IS NOT NULL " +
                 "AND l1.USER_ID != ? AND l2.USER_ID = ? " +
-                "ORDER BY COUNT(l1.USER_ID) DESC) " +
+                "GROUP BY l1.USER_ID " +
+                "ORDER BY COUNT(l1.USER_ID) DESC " +
+                "LIMIT 10) " +
                 "AND f.FILM_ID NOT IN (  " +
                 "SELECT FILM_ID FROM LIKES " +
-                "WHERE USER_ID = ? ))" +
-                "LIMIT 10;";
+                "WHERE USER_ID = ? ));";
+
         List<Film> films = jdbc.query(sql, JdbcFilmRepository::createFilm, userId, userId, userId);
 
         return filmsWithGenres(filmsWithDirectors(films));

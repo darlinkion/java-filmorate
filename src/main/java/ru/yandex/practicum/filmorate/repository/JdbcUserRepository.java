@@ -86,9 +86,9 @@ public class JdbcUserRepository implements IRepository<User> {
         try {
             String sql = "delete from users where id = ?";
             jdbc.update(sql, id);
-        } catch (EmptyResultDataAccessException e) {
+        } catch (Exception e) {
             log.error("Ошибка при удалении пользователя из БД: {}", e.getMessage(), e);
-            throw new NotFoundException("Нет такого пользователя по id = " + id);
+            throw new RuntimeException("Произошла ошибка при выполнении запроса", e);
         }
     }
 
