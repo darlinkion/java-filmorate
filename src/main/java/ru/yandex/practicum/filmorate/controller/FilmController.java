@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +46,12 @@ public class FilmController {
         return tempFilm;
     }
 
+    @DeleteMapping("{id}")
+    public void deleteById(@PathVariable @Positive int id) {
+        filmService.deleteById(id);
+        log.info("Delete film from DataBase with id ==>" + id);
+    }
+
     @PutMapping("{id}/like/{userId}")
     public void setLike(@PathVariable @Positive int id, @PathVariable @Positive int userId) {
         filmService.setLike(id, userId);
@@ -58,9 +65,38 @@ public class FilmController {
     }
 
     @GetMapping("popular")
-    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") Integer count) {
-        List<Film> films = filmService.getPopularFilms(count);
+    public List<Film> getPopularFilms(
+            @RequestParam(defaultValue = "10") Integer count,
+            @RequestParam(required = false) Integer genreId,
+            @RequestParam(required = false) Integer year) {
+        List<Film> films = filmService.getPopularFilms(count, genreId, year);
         log.info("Most popular films ==>" + films);
         return films;
+    }
+
+    @GetMapping("/common")
+    public List<Film> getMutualFilms(@RequestParam @Positive int userId, @RequestParam @Positive int friendId) {
+        List<Film> tempListMutualFilms = filmService.getMutualFilms(userId, friendId);
+        log.info("Friend films mutual from DataBase ==>" + tempListMutualFilms);
+        return tempListMutualFilms;
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getAllDirectorFilms(
+            @PathVariable @Positive int directorId,
+            @RequestParam(required = false, defaultValue = "likes") String sortBy) {
+
+        List<Film> films = filmService.getAllDirectorsFilms(directorId, sortBy);
+        log.info("Most popular films ==> " + films);
+        return films;
+    }
+
+    @GetMapping("/search")
+    public List<Film> searchFilms(
+            @NotNull @RequestParam String query,
+            @NotNull @RequestParam String by) {
+        List<Film> searchFilms = filmService.searchFilms(query, by);
+        log.info("Search films ==> " + searchFilms);
+        return searchFilms;
     }
 }
