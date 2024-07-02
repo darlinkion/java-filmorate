@@ -62,6 +62,9 @@ public class FilmService implements BaseService<Film> {
     }
 
     public void deleteById(int id) {
+        if (get(id) == null) {
+            throw new NotFoundException("Нет такого фильма по id " + id);
+        }
         jdbcFilmRepository.deleteById(id);
     }
 
